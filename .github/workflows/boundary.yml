@@ -18,3 +18,10 @@ jobs:
         run: grep -R "Generated scaffold placeholder for P6-M3-S2. Not production implementation." README.md PRODUCT_BOUNDARY.md docs src-tauri ui public-core-bridge packaging tests
       - name: Run boundary check
         run: python scripts/check_boundary.py --json
+      - name: Run local fixture flow
+        run: python scripts/check_local_fixture_flow.py --json
+      - name: Verify fixture output artifacts exist
+        run: |
+          test -f .tmp/local_fixture_flow/run_result.json
+          test -f .tmp/local_fixture_flow_text/run_result.json
+          test -f .tmp/local_fixture_flow_check.json

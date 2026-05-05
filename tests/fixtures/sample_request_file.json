@@ -1,0 +1,13 @@
+﻿{
+  "schema_version": 1,
+  "request_id": "fixture-file-request",
+  "input_kind": "local_file",
+  "input_path": "tests/fixtures/sample_input.txt",
+  "output_dir": ".tmp/local_fixture_flow",
+  "requested_outputs": [
+    "normalized_text",
+    "content_evidence",
+    "receipt",
+    "filesystem_output"
+  ]
+}

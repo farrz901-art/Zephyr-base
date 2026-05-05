@@ -1,10 +1,64 @@
-{
-  "placeholder_only": true,
-  "generated_for": "scaffold_planning",
-  "contracts": [
-    "base_run_request_v1",
-    "base_run_result_v1",
-    "base_receipt_view_v1",
-    "base_error_v1"
-  ]
+﻿{
+  "schema_version": 1,
+  "report_id": "zephyr.base.bridge_contract.v1",
+  "contract_status": "fixture_contract_not_production_runtime",
+  "production_runtime_implemented": false,
+  "requires_p45_substrate": false,
+  "commercial_logic_allowed": false,
+  "contracts": {
+    "base_run_request_v1": {
+      "required_fields": [
+        "schema_version",
+        "request_id",
+        "input_kind",
+        "output_dir",
+        "requested_outputs"
+      ],
+      "input_kind": ["local_file", "local_text"],
+      "forbidden_fields": [
+        "license",
+        "entitlement",
+        "payment",
+        "billing",
+        "account",
+        "web_core",
+        "private_core"
+      ]
+    },
+    "base_run_result_v1": {
+      "required_fields": [
+        "schema_version",
+        "request_id",
+        "status",
+        "normalized_text_preview",
+        "content_evidence_summary",
+        "receipt",
+        "usage_fact",
+        "output_files",
+        "error"
+      ],
+      "usage_fact": {
+        "billing_semantics": false
+      }
+    },
+    "base_receipt_view_v1": {
+      "required_fields": [
+        "run_id",
+        "delivery_outcome",
+        "output_root",
+        "artifacts"
+      ]
+    },
+    "base_error_v1": {
+      "required_fields": [
+        "schema_version",
+        "error_code",
+        "category",
+        "user_message",
+        "technical_detail_safe",
+        "secret_safe"
+      ],
+      "secret_safe_required": true
+    }
+  }
 }
