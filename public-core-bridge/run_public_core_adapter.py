@@ -35,6 +35,7 @@ def _read_json(path: Path) -> dict[str, object]:
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
 
@@ -57,7 +58,15 @@ def _build_error(*, code: str, category: str, message: str, detail: str) -> dict
     }
 
 
-def _write_failure_outputs(*, out_dir: Path, request_id: str, error: dict[str, object]) -> dict[str, object]:
+def _write_failure_outputs(
+    *,
+    out_dir: Path,
+    request_id: str,
+    error: dict[str, object],
+    adapter_runtime: str,
+    bundled_runtime_used: bool,
+    zephyr_dev_working_tree_required: bool,
+) -> dict[str, object]:
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / 'normalized_text.txt').write_text('', encoding='utf-8')
     content_evidence = {
@@ -65,9 +74,15 @@ def _write_failure_outputs(*, out_dir: Path, request_id: str, error: dict[str, o
         'evidence_kind': 'artifact_reference_only_v1',
         'normalized_text_status': 'missing',
         'production_runtime': False,
-        'adapter_runtime': 'zephyr_base_public_core_adapter_v1',
+        'adapter_runtime': adapter_runtime,
+        'real_adapter_runtime': False,
         'fixture_runner_used': False,
+        'bundled_runtime_used': bundled_runtime_used,
         'zephyr_dev_public_core_invoked': False,
+        'zephyr_dev_working_tree_required': zephyr_dev_working_tree_required,
+        'installer_runtime_complete': False,
+        'requires_network': False,
+        'requires_p45_substrate': False,
     }
     receipt = {
         'schema_version': 1,
@@ -77,12 +92,17 @@ def _write_failure_outputs(*, out_dir: Path, request_id: str, error: dict[str, o
         'delivery_outcome': 'failed',
         'output_root': str(out_dir),
         'artifacts': OUTPUT_FILES,
-        'created_by': 'Zephyr-base real adapter',
+        'created_by': 'Zephyr-base public core adapter',
         'production_runtime': False,
         'real_adapter_runtime': False,
-        'adapter_runtime': 'zephyr_base_public_core_adapter_v1',
+        'adapter_runtime': adapter_runtime,
         'fixture_runner_used': False,
+        'bundled_runtime_used': bundled_runtime_used,
         'zephyr_dev_public_core_invoked': False,
+        'zephyr_dev_working_tree_required': zephyr_dev_working_tree_required,
+        'installer_runtime_complete': False,
+        'requires_network': False,
+        'requires_p45_substrate': False,
     }
     usage_fact = {
         'schema_version': 1,
@@ -91,9 +111,14 @@ def _write_failure_outputs(*, out_dir: Path, request_id: str, error: dict[str, o
         'output_files_count': len(OUTPUT_FILES),
         'production_runtime': False,
         'real_adapter_runtime': False,
-        'adapter_runtime': 'zephyr_base_public_core_adapter_v1',
+        'adapter_runtime': adapter_runtime,
         'fixture_runner_used': False,
+        'bundled_runtime_used': bundled_runtime_used,
         'zephyr_dev_public_core_invoked': False,
+        'zephyr_dev_working_tree_required': zephyr_dev_working_tree_required,
+        'installer_runtime_complete': False,
+        'requires_network': False,
+        'requires_p45_substrate': False,
     }
     run_result = {
         'schema_version': 1,
@@ -110,9 +135,15 @@ def _write_failure_outputs(*, out_dir: Path, request_id: str, error: dict[str, o
         'output_files': OUTPUT_FILES,
         'error': error,
         'fixture_runner_used': False,
+        'bundled_runtime_used': bundled_runtime_used,
         'zephyr_dev_public_core_invoked': False,
-        'adapter_runtime': 'zephyr_base_public_core_adapter_v1',
+        'zephyr_dev_working_tree_required': zephyr_dev_working_tree_required,
+        'adapter_runtime': adapter_runtime,
         'real_adapter_runtime': False,
+        'production_runtime': False,
+        'installer_runtime_complete': False,
+        'requires_network': False,
+        'requires_p45_substrate': False,
     }
     _write_json(out_dir / 'content_evidence.json', content_evidence)
     _write_json(out_dir / 'receipt.json', receipt)
@@ -186,35 +217,46 @@ def _prepare_upstream_request(*, root: Path, request: dict[str, object], staging
     return request_path
 
 
-def _finalize_outputs(*, out_dir: Path, staging_dir: Path, invocation_succeeded: bool) -> dict[str, object]:
+def _finalize_outputs(
+    *,
+    out_dir: Path,
+    staging_dir: Path,
+    invocation_succeeded: bool,
+    adapter_runtime: str,
+    bundled_runtime_used: bool,
+    zephyr_dev_public_core_invoked: bool,
+    zephyr_dev_working_tree_required: bool,
+    installer_runtime_complete: bool,
+    bundle_root: Path | None,
+) -> dict[str, object]:
+    contract_path = _resolve_repo_root() / 'public-core-bridge' / 'bridge_contract.json'
     run_result = _read_json(staging_dir / 'run_result.json')
-    _validate_against_contract(contract_path=_resolve_repo_root() / 'public-core-bridge' / 'bridge_contract.json', run_result=run_result)
+    _validate_against_contract(contract_path=contract_path, run_result=run_result)
     content_evidence = _read_json(staging_dir / 'content_evidence.json')
     receipt = _read_json(staging_dir / 'receipt.json')
     usage_fact = _read_json(staging_dir / 'usage_fact.json')
     normalized_text = _read_text(staging_dir / 'normalized_text.txt')
 
-    content_evidence['adapter_runtime'] = 'zephyr_base_public_core_adapter_v1'
-    content_evidence['real_adapter_runtime'] = invocation_succeeded
-    content_evidence['fixture_runner_used'] = False
-    content_evidence['zephyr_dev_public_core_invoked'] = True
+    shared = {
+        'adapter_runtime': adapter_runtime,
+        'real_adapter_runtime': invocation_succeeded,
+        'production_runtime': invocation_succeeded,
+        'fixture_runner_used': False,
+        'bundled_runtime_used': bundled_runtime_used,
+        'zephyr_dev_public_core_invoked': zephyr_dev_public_core_invoked,
+        'zephyr_dev_working_tree_required': zephyr_dev_working_tree_required,
+        'installer_runtime_complete': installer_runtime_complete,
+        'requires_network': False,
+        'requires_p45_substrate': False,
+    }
+    if bundle_root is not None:
+        shared['bundle_root'] = str(bundle_root)
 
-    receipt['adapter_runtime'] = 'zephyr_base_public_core_adapter_v1'
-    receipt['real_adapter_runtime'] = invocation_succeeded
-    receipt['fixture_runner_used'] = False
-    receipt['zephyr_dev_public_core_invoked'] = True
+    content_evidence.update(shared)
+    receipt.update(shared)
     receipt['output_root'] = str(out_dir)
-
-    usage_fact['adapter_runtime'] = 'zephyr_base_public_core_adapter_v1'
-    usage_fact['real_adapter_runtime'] = invocation_succeeded
-    usage_fact['fixture_runner_used'] = False
-    usage_fact['zephyr_dev_public_core_invoked'] = True
-
-    run_result['adapter_runtime'] = 'zephyr_base_public_core_adapter_v1'
-    run_result['real_adapter_runtime'] = invocation_succeeded
-    run_result['production_runtime'] = invocation_succeeded
-    run_result['fixture_runner_used'] = False
-    run_result['zephyr_dev_public_core_invoked'] = True
+    usage_fact.update(shared)
+    run_result.update(shared)
     run_result['receipt'] = receipt
     run_result['usage_fact'] = usage_fact
 
@@ -228,10 +270,11 @@ def _finalize_outputs(*, out_dir: Path, staging_dir: Path, invocation_succeeded:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description='Run the Zephyr-base real public-core adapter.')
+    parser = argparse.ArgumentParser(description='Run the Zephyr-base public-core adapter.')
     parser.add_argument('--request', type=Path, required=True)
     parser.add_argument('--out-dir', type=Path, required=True)
     parser.add_argument('--zephyr-dev-root', type=Path, default=None)
+    parser.add_argument('--bundle-root', type=Path, default=None)
     parser.add_argument('--allow-fixture-fallback', action='store_true')
     parser.add_argument('--json', action='store_true')
     args = parser.parse_args(argv)
@@ -241,6 +284,66 @@ def main(argv: list[str] | None = None) -> int:
     out_dir = _resolve_path(root, args.out_dir)
     request = _read_json(request_path)
     request_id = str(request.get('request_id', 'unknown-request'))
+
+    if args.bundle_root is not None:
+        bundle_root = _resolve_path(root, args.bundle_root)
+        runner = bundle_root / 'run_bundle_public_core.py'
+        if not runner.exists():
+            error = _build_error(
+                code='base_dependency_missing',
+                category='dependency',
+                message='Bundled public-core runtime is missing.',
+                detail=f'Missing bundle entrypoint: {runner.as_posix()}',
+            )
+            run_result = _write_failure_outputs(
+                out_dir=out_dir,
+                request_id=request_id,
+                error=error,
+                adapter_runtime='zephyr_base_bundled_public_core_adapter_v1',
+                bundled_runtime_used=False,
+                zephyr_dev_working_tree_required=False,
+            )
+            if args.json:
+                print(json.dumps(run_result, ensure_ascii=False, indent=2))
+            return 1
+        staging_dir = out_dir / '_bundled_public_core_runner'
+        if staging_dir.exists():
+            shutil.rmtree(staging_dir)
+        staging_dir.mkdir(parents=True, exist_ok=True)
+        upstream_request_path = _prepare_upstream_request(root=root, request=request, staging_dir=staging_dir)
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(runner),
+                '--request',
+                str(upstream_request_path),
+                '--out-dir',
+                str(staging_dir),
+                '--json',
+            ],
+            cwd=bundle_root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if completed.stdout:
+            print(completed.stdout)
+        if completed.stderr:
+            print(completed.stderr, file=sys.stderr)
+        run_result = _finalize_outputs(
+            out_dir=out_dir,
+            staging_dir=staging_dir,
+            invocation_succeeded=completed.returncode == 0,
+            adapter_runtime='zephyr_base_bundled_public_core_adapter_v1',
+            bundled_runtime_used=True,
+            zephyr_dev_public_core_invoked=False,
+            zephyr_dev_working_tree_required=False,
+            installer_runtime_complete=False,
+            bundle_root=bundle_root,
+        )
+        if args.json:
+            print(json.dumps(run_result, ensure_ascii=False, indent=2))
+        return 0 if completed.returncode == 0 and str(run_result.get('status')) == 'success' else 1
 
     requested_root = args.zephyr_dev_root
     if requested_root is None:
@@ -253,7 +356,10 @@ def main(argv: list[str] | None = None) -> int:
             run_result = _read_json(out_dir / 'run_result.json')
             run_result['adapter_runtime'] = 'zephyr_base_public_core_adapter_v1'
             run_result['fixture_runner_used'] = True
+            run_result['bundled_runtime_used'] = False
             run_result['zephyr_dev_public_core_invoked'] = False
+            run_result['zephyr_dev_working_tree_required'] = False
+            run_result['installer_runtime_complete'] = False
             _write_json(out_dir / 'run_result.json', run_result)
             if args.json:
                 print(json.dumps(run_result, ensure_ascii=False, indent=2))
@@ -261,10 +367,17 @@ def main(argv: list[str] | None = None) -> int:
         error = _build_error(
             code='base_dependency_missing',
             category='dependency',
-            message='Zephyr-dev root is required for the real adapter.',
-            detail='Provide --zephyr-dev-root or set ZEPHYR_DEV_ROOT; fixture fallback is disabled by default.',
+            message='A bundled runtime or Zephyr-dev root is required for the adapter.',
+            detail='Provide --bundle-root or --zephyr-dev-root; fixture fallback is disabled by default.',
         )
-        run_result = _write_failure_outputs(out_dir=out_dir, request_id=request_id, error=error)
+        run_result = _write_failure_outputs(
+            out_dir=out_dir,
+            request_id=request_id,
+            error=error,
+            adapter_runtime='zephyr_base_public_core_adapter_v1',
+            bundled_runtime_used=False,
+            zephyr_dev_working_tree_required=False,
+        )
         if args.json:
             print(json.dumps(run_result, ensure_ascii=False, indent=2))
         return 1
@@ -278,7 +391,14 @@ def main(argv: list[str] | None = None) -> int:
             message='Zephyr-dev public core local runner is missing.',
             detail=f'Missing runner: {runner.as_posix()}',
         )
-        run_result = _write_failure_outputs(out_dir=out_dir, request_id=request_id, error=error)
+        run_result = _write_failure_outputs(
+            out_dir=out_dir,
+            request_id=request_id,
+            error=error,
+            adapter_runtime='zephyr_base_public_core_adapter_v1',
+            bundled_runtime_used=False,
+            zephyr_dev_working_tree_required=True,
+        )
         if args.json:
             print(json.dumps(run_result, ensure_ascii=False, indent=2))
         return 1
@@ -315,6 +435,12 @@ def main(argv: list[str] | None = None) -> int:
         out_dir=out_dir,
         staging_dir=staging_dir,
         invocation_succeeded=completed.returncode == 0,
+        adapter_runtime='zephyr_base_public_core_adapter_v1',
+        bundled_runtime_used=False,
+        zephyr_dev_public_core_invoked=True,
+        zephyr_dev_working_tree_required=True,
+        installer_runtime_complete=False,
+        bundle_root=None,
     )
     if args.json:
         print(json.dumps(run_result, ensure_ascii=False, indent=2))

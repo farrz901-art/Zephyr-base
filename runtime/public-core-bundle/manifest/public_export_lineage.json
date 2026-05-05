@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "report_id": "zephyr.base.public_core_bundle_lineage.v1",
+  "zephyr_dev_adapter_commit_sha": "1b53c126131ce457c43e7ebeb55f77612911cd92",
+  "zephyr_dev_current_sha": "1b53c126131ce457c43e7ebeb55f77612911cd92",
+  "p5_1_final_sha": "b94e662a3792fd1a253d457bc1f73b38aefb33fd",
+  "public_manifest_sha256": "a3254d5976e3a1d65f8f1afaecf91c0d32246167090b87b79fd6368a9f64b9c5",
+  "public_core_bundle_manifest_sha256": "3237106e34cb9f0777531b9b6b6ea73dd4c4b8421b29b9e0e22a0245f5594066",
+  "runner_sha256": "86da75df6bf304078106320b0dcf2c7285945bf24a933f70bee5f312a256770e",
+  "launcher_sha256": "012b2464d5b04abf134bdcd367c4b540c35f1832a608f58bc7a51f23607eee6a",
+  "bundle_generation_requires_zephyr_dev_working_tree": true,
+  "bundle_execution_requires_zephyr_dev_working_tree": false,
+  "uses_current_python_environment": true,
+  "embedded_python_runtime": false,
+  "wheelhouse_bundled": false,
+  "installer_runtime_complete": false
+}

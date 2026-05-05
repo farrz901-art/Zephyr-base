@@ -1,13 +1,14 @@
 ﻿{
   "schema_version": 1,
   "report_id": "zephyr.base.bridge_contract.v1",
-  "contract_status": "fixture_and_real_adapter_contract_not_bundled_runtime",
+  "contract_status": "fixture_dev_and_bundled_contract_not_full_installer_runtime",
   "production_runtime_implemented": false,
   "requires_p45_substrate": false,
   "commercial_logic_allowed": false,
   "supported_runtime_modes": [
     "fixture_regression_mode",
-    "dev_real_adapter_mode"
+    "dev_real_adapter_mode",
+    "bundled_public_core_mode"
   ],
   "contracts": {
     "base_run_request_v1": {
@@ -18,7 +19,10 @@
         "output_dir",
         "requested_outputs"
       ],
-      "input_kind": ["local_file", "local_text"],
+      "input_kind": [
+        "local_file",
+        "local_text"
+      ],
       "forbidden_fields": [
         "license",
         "entitlement",

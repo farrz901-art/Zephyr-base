@@ -37,7 +37,7 @@ ALLOWED_DOC_PATHS = {
     'docs/SOURCE_LINEAGE.md',
     'docs/BRIDGE_RUNTIME_MODES.md',
 }
-BLOCKED_PREFIXES = ('src-tauri/', 'ui/', 'public-core-bridge/')
+BLOCKED_PREFIXES = ('src-tauri/', 'ui/', 'public-core-bridge/', 'runtime/public-core-bundle/')
 ALLOWED_NEGATIVE = (
     'must not',
     'not ',
@@ -53,6 +53,10 @@ ALLOWED_BRIDGE_CONTEXT = (
     'zephyr_dev_public_core_invoked',
     'public_core_adapter',
     'fixture_runner_used',
+    'bundled_runtime_used',
+    'public-core-bundle',
+    'installer_runtime_complete',
+    'zephyr_dev_adapter_commit_sha',
 )
 ALLOWED_RUNTIME_CONTEXT = (
     'billing_semantics": false',
@@ -61,6 +65,11 @@ ALLOWED_RUNTIME_CONTEXT = (
     'public_core_adapter',
     'fixture_runner_used',
     '--allow-fixture-fallback',
+    'bundled_runtime_used',
+    'public-core-bundle',
+    'installer_runtime_complete',
+    'zephyr_dev_adapter_commit_sha',
+    'zephyr_dev_working_tree_required',
 )
 
 
@@ -81,6 +90,7 @@ def classify(path: Path, text: str) -> list[dict[str, object]]:
             allowed_runtime = rel in {
                 'public-core-bridge/run_public_core_adapter.py',
                 'scripts/check_real_adapter_flow.py',
+                'scripts/check_bundled_adapter_flow.py',
                 'scripts/check_boundary.py',
             } and any(marker in lowered for marker in ALLOWED_RUNTIME_CONTEXT)
             blocked = rel.startswith(BLOCKED_PREFIXES) and not (

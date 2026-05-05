@@ -6,6 +6,7 @@
 - fixture_runner_used: true
 - production_runtime: false
 - zephyr_dev_public_core_invoked: false
+- bundled_runtime_used: false
 
 ## Dev real adapter mode
 
@@ -13,17 +14,33 @@
 - fixture_runner_used: false
 - production_runtime: true
 - zephyr_dev_public_core_invoked: true
+- bundled_runtime_used: false
 - bridge mode for local_text may be `temp_file_to_public_core`
 - requires a local `ZEPHYR_DEV_ROOT`
 
-## Future bundled mode
+## Bundled public-core mode
 
-- purpose: later M3 Base runtime packaging
+- purpose: S5 bundled public-core runtime first slice
 - fixture_runner_used: false
-- zephyr_dev_public_core_invoked: false at end-user runtime
 - production_runtime: true
-- public core subset is bundled into Base packaging
+- bundled_runtime_used: true
+- zephyr_dev_working_tree_required: false
+- uses current Python environment
+- installer_runtime_complete: false
+- does not require `ZEPHYR_DEV_ROOT` at execution
 
-## Rule
+## Future installer-bundled mode
 
-S4 cannot be sealed by fixture mode. If the real adapter flow fails, S4 remains open or blocked.
+- purpose: later M3 clean-machine runtime packaging
+- fixture_runner_used: false
+- production_runtime: true
+- bundled_runtime_used: true
+- embedded Python or equivalent packaged runtime
+- clean-machine install target
+
+## Rules
+
+- S4 cannot be sealed by fixture mode.
+- S5 cannot be sealed by fixture mode.
+- S5 cannot be sealed by `--zephyr-dev-root` execution.
+- S5 may rely on the current Python environment, but it must truthfully mark `installer_runtime_complete = false`.

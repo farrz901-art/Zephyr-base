@@ -18,6 +18,10 @@ jobs:
         run: test -f docs/BRIDGE_RUNTIME_MODES.md
       - name: Check placeholder markers exist
         run: grep -R "Generated scaffold placeholder for P6-M3-S2. Not production implementation." README.md PRODUCT_BOUNDARY.md docs src-tauri ui public-core-bridge packaging tests
+      - name: Validate bundle manifest exists
+        run: test -f runtime/public-core-bundle/manifest/public_core_bundle_manifest.json
+      - name: Validate bundled adapter script exists
+        run: test -f runtime/public-core-bundle/run_bundle_public_core.py
       - name: Run boundary check
         run: python scripts/check_boundary.py --json
       - name: Run local fixture flow
@@ -29,6 +33,25 @@ jobs:
       - name: Optional real adapter smoke
         if: ${{ env.ZEPHYR_DEV_ROOT != '' }}
         run: python scripts/check_real_adapter_flow.py --zephyr-dev-root "$ZEPHYR_DEV_ROOT" --json
+      - name: Optional bundled adapter smoke
+        shell: bash
+        run: |
+          python - <<'PY'
+          import importlib.util
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          required = ["unstructured"]
+          missing = [name for name in required if importlib.util.find_spec(name) is None]
+          if missing:
+              print("skip bundled adapter smoke: missing public runtime dependencies", missing)
+              raise SystemExit(0)
+          repo_root = Path.cwd()
+          cmd = [sys.executable, "scripts/check_bundled_adapter_flow.py", "--json"]
+          completed = subprocess.run(cmd, cwd=repo_root, check=False)
+          raise SystemExit(completed.returncode)
+          PY
       - name: Verify fixture output artifacts exist
         run: |
           test -f .tmp/local_fixture_flow/run_result.json
