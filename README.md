@@ -8,4 +8,5 @@ Local-only is the default route.
 No license, entitlement, payment, billing, or Web-core dependency is included.
 This repository does not include Zephyr-dev runtime source.
 This repository does not require the P4.5 Docker substrate.
-Source lineage points to Zephyr-dev SHA $sourceSha.
+Source lineage points to Zephyr-dev SHA `780690a21ddc60bb5a01529d3d35358f08903685`.
+
