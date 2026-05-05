@@ -16,11 +16,52 @@ FORBIDDEN_TERMS = (
     'private_core_export',
     'zephyr_pro',
 )
-TEXT_SUFFIXES = {'.md', '.py', '.json', '.rs', '.tsx', '.ts', '.jsx', '.js', '.html', '.toml', '.css', '.yml', '.yaml'}
-ALLOWED_DOCS = {'README.md', 'PRODUCT_BOUNDARY.md', 'SOURCE_LINEAGE.md'}
+TEXT_SUFFIXES = {
+    '.md',
+    '.py',
+    '.json',
+    '.rs',
+    '.tsx',
+    '.ts',
+    '.jsx',
+    '.js',
+    '.html',
+    '.toml',
+    '.css',
+    '.yml',
+    '.yaml',
+}
+ALLOWED_DOC_PATHS = {
+    'README.md',
+    'PRODUCT_BOUNDARY.md',
+    'docs/SOURCE_LINEAGE.md',
+    'docs/BRIDGE_RUNTIME_MODES.md',
+}
 BLOCKED_PREFIXES = ('src-tauri/', 'ui/', 'public-core-bridge/')
-ALLOWED_NEGATIVE = ('must not', 'not ', 'no ', 'forbidden', 'does not include', 'billing_semantics": false', 'billing_semantics: false')
-ALLOWED_BRIDGE_CONTEXT = ('forbidden_fields', 'secret_safe_required', 'billing_semantics')
+ALLOWED_NEGATIVE = (
+    'must not',
+    'not ',
+    'no ',
+    'forbidden',
+    'does not include',
+    'cannot',
+)
+ALLOWED_BRIDGE_CONTEXT = (
+    'forbidden_fields',
+    'secret_safe_required',
+    'billing_semantics',
+    'zephyr_dev_public_core_invoked',
+    'public_core_adapter',
+    'fixture_runner_used',
+)
+ALLOWED_RUNTIME_CONTEXT = (
+    'billing_semantics": false',
+    'billing_semantics: false',
+    'zephyr_dev_public_core_invoked',
+    'public_core_adapter',
+    'fixture_runner_used',
+    '--allow-fixture-fallback',
+)
 
 
 def classify(path: Path, text: str) -> list[dict[str, object]]:
@@ -32,12 +73,34 @@ def classify(path: Path, text: str) -> list[dict[str, object]]:
         for term in FORBIDDEN_TERMS:
             if term not in lowered:
                 continue
-            is_doc = path.name in ALLOWED_DOCS
+            is_doc = rel in ALLOWED_DOC_PATHS
             allowed_boundary = is_doc and any(marker in lowered for marker in ALLOWED_NEGATIVE)
-            allowed_bridge = rel == 'public-core-bridge/bridge_contract.json' and any(marker in lowered for marker in ALLOWED_BRIDGE_CONTEXT)
-            blocked = rel.startswith(BLOCKED_PREFIXES) and not allowed_boundary and not allowed_bridge
-            classification = 'allowed_boundary' if (allowed_boundary or allowed_bridge) else 'blocked' if blocked else 'review_required'
-            findings.append({'path': rel, 'line': line_no, 'term': term, 'classification': classification})
+            allowed_bridge = rel == 'public-core-bridge/bridge_contract.json' and any(
+                marker in lowered for marker in ALLOWED_BRIDGE_CONTEXT
+            )
+            allowed_runtime = rel in {
+                'public-core-bridge/run_public_core_adapter.py',
+                'scripts/check_real_adapter_flow.py',
+                'scripts/check_boundary.py',
+            } and any(marker in lowered for marker in ALLOWED_RUNTIME_CONTEXT)
+            blocked = rel.startswith(BLOCKED_PREFIXES) and not (
+                allowed_boundary or allowed_bridge or allowed_runtime
+            )
+            classification = (
+                'allowed_boundary'
+                if (allowed_boundary or allowed_bridge or allowed_runtime)
+                else 'blocked'
+                if blocked
+                else 'review_required'
+            )
+            findings.append(
+                {
+                    'path': rel,
+                    'line': line_no,
+                    'term': term,
+                    'classification': classification,
+                }
+            )
     return findings
 
 
@@ -66,8 +129,12 @@ def main(argv: list[str] | None = None) -> int:
         'summary': {
             'pass': len(blocked) == 0,
             'blocked_count': len(blocked),
-            'review_required_count': sum(1 for item in findings if item['classification'] == 'review_required'),
-            'allowed_boundary_count': sum(1 for item in findings if item['classification'] == 'allowed_boundary'),
+            'review_required_count': sum(
+                1 for item in findings if item['classification'] == 'review_required'
+            ),
+            'allowed_boundary_count': sum(
+                1 for item in findings if item['classification'] == 'allowed_boundary'
+            ),
         },
         'findings': findings,
     }

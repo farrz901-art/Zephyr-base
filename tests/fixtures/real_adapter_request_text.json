@@ -1,0 +1,13 @@
+﻿{
+  "schema_version": 1,
+  "request_id": "real-adapter-text-request",
+  "input_kind": "local_text",
+  "inline_text": "ZEPHYR_BASE_REAL_ADAPTER_MARKER_M3_S4_TEXT",
+  "output_dir": ".tmp/local_adapter_flow_text",
+  "requested_outputs": [
+    "normalized_text",
+    "content_evidence",
+    "receipt",
+    "filesystem_output"
+  ]
+}

@@ -14,12 +14,21 @@ jobs:
           python-version: '3.12'
       - name: Check source lineage exists
         run: test -f docs/SOURCE_LINEAGE.md
+      - name: Check bridge runtime modes doc exists
+        run: test -f docs/BRIDGE_RUNTIME_MODES.md
       - name: Check placeholder markers exist
         run: grep -R "Generated scaffold placeholder for P6-M3-S2. Not production implementation." README.md PRODUCT_BOUNDARY.md docs src-tauri ui public-core-bridge packaging tests
       - name: Run boundary check
         run: python scripts/check_boundary.py --json
       - name: Run local fixture flow
         run: python scripts/check_local_fixture_flow.py --json
+      - name: Verify real adapter script exists
+        run: test -f public-core-bridge/run_public_core_adapter.py
+      - name: Verify fixture fallback is opt-in
+        run: grep -n -- "--allow-fixture-fallback" public-core-bridge/run_public_core_adapter.py
+      - name: Optional real adapter smoke
+        if: ${{ env.ZEPHYR_DEV_ROOT != '' }}
+        run: python scripts/check_real_adapter_flow.py --zephyr-dev-root "$ZEPHYR_DEV_ROOT" --json
       - name: Verify fixture output artifacts exist
         run: |
           test -f .tmp/local_fixture_flow/run_result.json
