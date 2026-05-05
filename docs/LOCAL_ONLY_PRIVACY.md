@@ -1,0 +1,5 @@
+# Local Only Privacy
+
+placeholder only
+generated for scaffold planning
+not production implementation

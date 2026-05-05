@@ -1,0 +1,4 @@
+[package]
+name = "zephyr-base-shadow"
+version = "0.0.0-shadow"
+placeholder_only = true

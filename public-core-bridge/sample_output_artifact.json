@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "request_id": "example-request-id",
+  "status": "success|failed",
+  "normalized_text_preview": "safe preview only",
+  "content_evidence_summary": {
+    "elements_count": 0,
+    "has_normalized_text": true,
+    "evidence_kind": "content_evidence_summary"
+  },
+  "receipt": {
+    "run_id": "example-run-id",
+    "delivery_outcome": "success|failed",
+    "output_root": "local-output-dir"
+  },
+  "usage_fact": {
+    "fact_kind": "technical_usage_fact",
+    "billing_semantics": false
+  },
+  "output_files": [
+    "normalized_text.txt",
+    "content_evidence.json",
+    "receipt.json"
+  ],
+  "error": null
+}

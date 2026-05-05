@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "request_id": "example-request-id",
+  "input_kind": "local_file|local_text",
+  "input_path": "path-or-inline-text-handle",
+  "output_dir": "local-output-dir",
+  "requested_outputs": [
+    "normalized_text",
+    "content_evidence",
+    "receipt",
+    "filesystem_output"
+  ]
+}

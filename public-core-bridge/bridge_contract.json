@@ -1,0 +1,10 @@
+{
+  "placeholder_only": true,
+  "generated_for": "scaffold_planning",
+  "contracts": [
+    "base_run_request_v1",
+    "base_run_result_v1",
+    "base_receipt_view_v1",
+    "base_error_v1"
+  ]
+}

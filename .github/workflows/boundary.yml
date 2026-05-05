@@ -1,0 +1,20 @@
+﻿name: boundary
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check source lineage exists
+        run: test -f docs/SOURCE_LINEAGE.md
+      - name: Check placeholder markers exist
+        run: grep -R "Generated scaffold placeholder for P6-M3-S2. Not production implementation." README.md PRODUCT_BOUNDARY.md docs src-tauri ui public-core-bridge packaging tests
+      - name: Run boundary check
+        run: python scripts/check_boundary.py --json
