@@ -59,7 +59,7 @@ def _verify(root: Path, rel_out_dir: str, expected_marker: str) -> dict[str, obj
     preview = str(run_result['normalized_text_preview'])
     joined = json.dumps({'run_result': run_result, 'content': content, 'receipt': receipt}, ensure_ascii=False)
     marker_found = expected_marker in normalized or expected_marker in preview or expected_marker in joined
-    contains_dev_root = 'E:\\\\Github_Projects\\\\Zephyr' in joined or '/Github_Projects/Zephyr' in joined
+    contains_dev_root = 'E:\\\\Github_Projects\\\\Zephyr\\\\' in joined or '/Github_Projects/Zephyr/' in joined
     return {
         'run_result_exists': (out_dir / 'run_result.json').exists(),
         'normalized_text_exists': (out_dir / 'normalized_text.txt').exists(),
@@ -151,3 +151,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == '__main__':
     raise SystemExit(main())
+
