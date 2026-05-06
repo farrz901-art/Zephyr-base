@@ -46,10 +46,10 @@ jobs:
           import sys
           from pathlib import Path
 
-          required = ["unstructured"]
+          required = ["pydantic", "unstructured"]
           missing = [name for name in required if importlib.util.find_spec(name) is None]
           if missing:
-              print("skip bundled adapter smoke: missing public runtime dependencies", missing)
+              print("skip bundled adapter smoke: missing public runtime dependencies; not a production pass", missing)
               raise SystemExit(0)
           repo_root = Path.cwd()
           cmd = [sys.executable, "scripts/check_bundled_adapter_flow.py", "--json"]

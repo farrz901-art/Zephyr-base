@@ -56,7 +56,34 @@ def main(argv: list[str] | None = None) -> int:
     if completed.stderr:
         print(completed.stderr, file=sys.stderr)
 
-    run_result = _read_json(out_dir / 'run_result.json')
+    run_result_path = out_dir / 'run_result.json'
+    if not run_result_path.exists():
+        report = {
+            'schema_version': 1,
+            'report_id': 'zephyr.base.bundle_unsupported_surface_check.v1',
+            'summary': {
+                'pass': False,
+                'unsupported_pdf_rejected': False,
+                'hidden_pdf_route_available': False,
+                'secret_safe_error': False,
+            },
+            'result': {
+                'returncode': completed.returncode,
+                'status': 'missing_run_result',
+                'error_code': None,
+                'category': None,
+                'secret_safe': None,
+                'normalized_text_non_empty': False,
+            },
+        }
+        out_path = root / '.tmp' / 'bundle_unsupported_surface_check.json'
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        if args.json:
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 1
+
+    run_result = _read_json(run_result_path)
     error_obj = run_result.get('error')
     if not isinstance(error_obj, dict):
         raise ValueError('Expected base_error_v1 payload in run_result.error')

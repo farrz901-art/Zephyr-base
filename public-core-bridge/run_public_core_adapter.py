@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import argparse
 import json
@@ -217,6 +217,38 @@ def _prepare_upstream_request(*, root: Path, request: dict[str, object], staging
     return request_path
 
 
+def _load_bundle_manifest(bundle_root: Path) -> dict[str, object]:
+    manifest_path = bundle_root / 'manifest' / 'public_core_bundle_manifest.json'
+    return _read_json(manifest_path)
+
+
+def _allowed_bundle_extensions(bundle_root: Path) -> set[str]:
+    manifest = _load_bundle_manifest(bundle_root)
+    raw = manifest.get('supported_input_extensions')
+    if not isinstance(raw, list):
+        return set()
+    extensions: set[str] = set()
+    for item in raw:
+        if isinstance(item, str) and item:
+            extensions.add(item.lower())
+    return extensions
+
+
+def _request_input_extension(*, root: Path, request: dict[str, object]) -> str | None:
+    input_kind = str(request.get('input_kind', 'unknown'))
+    if input_kind == 'local_file':
+        input_path_value = str(request.get('input_path', ''))
+        resolved = _resolve_path(root, Path(input_path_value))
+        return resolved.suffix.lower()
+    if input_kind == 'local_text':
+        return '.txt'
+    return None
+
+
+def _stage_run_result_path(staging_dir: Path) -> Path:
+    return staging_dir / 'run_result.json'
+
+
 def _finalize_outputs(
     *,
     out_dir: Path,
@@ -269,6 +301,32 @@ def _finalize_outputs(
     return run_result
 
 
+def _write_runner_failure(
+    *,
+    out_dir: Path,
+    request_id: str,
+    adapter_runtime: str,
+    bundled_runtime_used: bool,
+    zephyr_dev_working_tree_required: bool,
+    category: str,
+    detail: str,
+) -> dict[str, object]:
+    error = _build_error(
+        code='base_runner_failed',
+        category=category,
+        message='Public-core runner did not produce a valid result.',
+        detail=detail,
+    )
+    return _write_failure_outputs(
+        out_dir=out_dir,
+        request_id=request_id,
+        error=error,
+        adapter_runtime=adapter_runtime,
+        bundled_runtime_used=bundled_runtime_used,
+        zephyr_dev_working_tree_required=zephyr_dev_working_tree_required,
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description='Run the Zephyr-base public-core adapter.')
     parser.add_argument('--request', type=Path, required=True)
@@ -306,11 +364,38 @@ def main(argv: list[str] | None = None) -> int:
             if args.json:
                 print(json.dumps(run_result, ensure_ascii=False, indent=2))
             return 1
+        allowed_extensions = _allowed_bundle_extensions(bundle_root)
+        requested_extension = _request_input_extension(root=root, request=request)
+        if requested_extension is None or requested_extension not in allowed_extensions:
+            error = _build_error(
+                code='base_request_invalid',
+                category='input',
+                message='Bundled public-core runtime does not support this input extension.',
+                detail=(
+                    f'unsupported_extension:{requested_extension}; '
+                    f'allowed_extensions:{sorted(allowed_extensions)}'
+                ),
+            )
+            run_result = _write_failure_outputs(
+                out_dir=out_dir,
+                request_id=request_id,
+                error=error,
+                adapter_runtime='zephyr_base_bundled_public_core_adapter_v1',
+                bundled_runtime_used=True,
+                zephyr_dev_working_tree_required=False,
+            )
+            if args.json:
+                print(json.dumps(run_result, ensure_ascii=False, indent=2))
+            return 1
         staging_dir = out_dir / '_bundled_public_core_runner'
         if staging_dir.exists():
             shutil.rmtree(staging_dir)
         staging_dir.mkdir(parents=True, exist_ok=True)
-        upstream_request_path = _prepare_upstream_request(root=root, request=request, staging_dir=staging_dir)
+        upstream_request_path = _prepare_upstream_request(
+            root=root,
+            request=request,
+            staging_dir=staging_dir,
+        )
         completed = subprocess.run(
             [
                 sys.executable,
@@ -330,6 +415,26 @@ def main(argv: list[str] | None = None) -> int:
             print(completed.stdout)
         if completed.stderr:
             print(completed.stderr, file=sys.stderr)
+        staged_run_result = _stage_run_result_path(staging_dir)
+        if not staged_run_result.exists():
+            detail = (
+                'bundle_runner_missing_run_result; '
+                f'returncode={completed.returncode}; '
+                f'stderr={completed.stderr.strip()}'
+            )
+            category = 'processing' if completed.returncode != 0 else 'dependency'
+            run_result = _write_runner_failure(
+                out_dir=out_dir,
+                request_id=request_id,
+                adapter_runtime='zephyr_base_bundled_public_core_adapter_v1',
+                bundled_runtime_used=True,
+                zephyr_dev_working_tree_required=False,
+                category=category,
+                detail=detail,
+            )
+            if args.json:
+                print(json.dumps(run_result, ensure_ascii=False, indent=2))
+            return 1
         run_result = _finalize_outputs(
             out_dir=out_dir,
             staging_dir=staging_dir,
@@ -430,6 +535,27 @@ def main(argv: list[str] | None = None) -> int:
         print(completed.stdout)
     if completed.stderr:
         print(completed.stderr, file=sys.stderr)
+
+    staged_run_result = _stage_run_result_path(staging_dir)
+    if not staged_run_result.exists():
+        detail = (
+            'zephyr_dev_runner_missing_run_result; '
+            f'returncode={completed.returncode}; '
+            f'stderr={completed.stderr.strip()}'
+        )
+        category = 'processing' if completed.returncode != 0 else 'dependency'
+        run_result = _write_runner_failure(
+            out_dir=out_dir,
+            request_id=request_id,
+            adapter_runtime='zephyr_base_public_core_adapter_v1',
+            bundled_runtime_used=False,
+            zephyr_dev_working_tree_required=True,
+            category=category,
+            detail=detail,
+        )
+        if args.json:
+            print(json.dumps(run_result, ensure_ascii=False, indent=2))
+        return 1
 
     run_result = _finalize_outputs(
         out_dir=out_dir,
