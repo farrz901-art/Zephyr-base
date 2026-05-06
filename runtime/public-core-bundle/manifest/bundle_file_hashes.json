@@ -4,11 +4,11 @@
   "recorded_files_excluding_self": [
     {
       "path": "manifest/public_core_bundle_manifest.json",
-      "sha256": "89fc1ced197ddf22a80ef38dd7f59a7af9a4837a3a15da52c9d1189ed666448f"
+      "sha256": "3cf6c47f330c668fd94d55bc6ac71d790dd695cb773548821842b39a500b373f"
     },
     {
       "path": "manifest/public_export_lineage.json",
-      "sha256": "be89cde0ec33f8fafff4a1ea6fdaabce0db477ebd40deb31b1a9cc6e5e8f9bb2"
+      "sha256": "b71cb3e61cb8b1c417cd95751b9eaf7abc6060278f7fc623dad865b979e03eef"
     },
     {
       "path": "packages/uns-stream/src/uns_stream/__init__.py",
@@ -56,7 +56,7 @@
     },
     {
       "path": "packages/uns-stream/src/uns_stream/backends/local_unstructured.py",
-      "sha256": "919365c26b77e091d978f141d86f0b78b7d0a3cf33755dfb024db8cf76b0ad33"
+      "sha256": "49027e34be7f5bfd18d718b69c53f3adcdc4a7f37d8d1c89eff315965a18c8e3"
     },
     {
       "path": "packages/uns-stream/src/uns_stream/clients/__init__.py",
@@ -83,48 +83,8 @@
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "packages/uns-stream/src/uns_stream/partition/api.py",
-      "sha256": "fc51fbfd8756cce3d6206735f1fd9e279666500ae075e10301a4a945b32ffcdc"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/audio.py",
-      "sha256": "53912e206ae3d912b5f33b70f3dd6835f4b6297330a76736bff3888663c782a7"
-    },
-    {
       "path": "packages/uns-stream/src/uns_stream/partition/auto.py",
-      "sha256": "816c4eb4ade0594dfc4c4179b03d354762de52b903f563830500a025d44ad2d2"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/csv.py",
-      "sha256": "c89497108ba349ef6150e4c3b951d6d018e27ccdec21e39a1b7c8f47b5d44e78"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/doc.py",
-      "sha256": "e98dc3d7bc3001b283e228c9ceee28c1926e10dd45a30129e24fba6a79fc34d0"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/docx.py",
-      "sha256": "c65940a5d33f9158cb610dee7a08d200a919c4fa01249cdb8691307df6a7b587"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/email.py",
-      "sha256": "bc6dcf5ad4b7f9f5244757bb11532151835429271edd8f1919bdfb62a71f86bc"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/epub.py",
-      "sha256": "da11e613cf9083771abaf5d2ba9e434984adf4a5441bd0706629d7c06b36cb3a"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/html.py",
-      "sha256": "79cfb57a21dfcb3f551b49a65541db1206991793b1b057a5305a3ba55d0b0a0e"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/image.py",
-      "sha256": "83878ad40865bcc5506bda12ff6d6763b6683b41a7c9a4a8d415aec059f81327"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/json.py",
-      "sha256": "cd6fd7bd142448ec0ddc59071f01997f60b1f8de32bcfcd97427b275672e5cee"
+      "sha256": "06a6f7ee34e49df897fc0b79359b26f2db7a1df1d79c6ea1a2dabbf306af03f0"
     },
     {
       "path": "packages/uns-stream/src/uns_stream/partition/md.py",
@@ -133,42 +93,6 @@
     {
       "path": "packages/uns-stream/src/uns_stream/partition/model_init.py",
       "sha256": "efeacf9877501ca5d83812ab45918807e1f445787681f74397340a0ad58aaf09"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/msg.py",
-      "sha256": "d93bb9d473371549c85d7f62d8a34ea567c4e017ce3cea992595bcdecde74325"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/ndjson.py",
-      "sha256": "525cbf5825409cad3867df0624c8ed9f72646b9c49692e3354534c7c851918e3"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/odt.py",
-      "sha256": "4f221515ce8648d729b3e2039515d3d7c2ca228d6aef150ba26efc4513c417f5"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/org.py",
-      "sha256": "94330f83eb86f2b9095b67fce37d1b1b745ef43fb18a540e57c02123fcc10c18"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/pdf.py",
-      "sha256": "68ee144f01ad363668e40b4101631f92d58d6ebd204b496b1c7270f4576c5725"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/ppt.py",
-      "sha256": "3ccd585c4ebe93f0b01f45f34caecbc7cf19a3b11bd6c80b650348e344d589f8"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/pptx.py",
-      "sha256": "241bb16d7bc4f5861246c20d7c3d1e5505f251874f52d9ea061a2b7538648359"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/rst.py",
-      "sha256": "44abf7a930e516211048c52ac4df2890c3800ba7407421951c0d33d27622994e"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/rtf.py",
-      "sha256": "99be8d9b1dcdad7d5b194e40d5627e5f9f4eb188ca0f433a5b276ce1a1d9781d"
     },
     {
       "path": "packages/uns-stream/src/uns_stream/partition/strategies.py",
@@ -181,18 +105,6 @@
     {
       "path": "packages/uns-stream/src/uns_stream/partition/text_type.py",
       "sha256": "5344bcd7fbb26d94af44c422df783c8acc02a0ba7c9def9a2f948ee053ea5f6d"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/tsv.py",
-      "sha256": "db30da2f4ffd37e33dc867a063e76d98666ea4a4668badb3e8def37835f5f51f"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/xlsx.py",
-      "sha256": "5d2ada6b55fb3b2208b3d7ed11030524145ab70ece2f521f39a767fc4c06745a"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/partition/xml.py",
-      "sha256": "b3b8a8cc04ed09626f517c08340754def0a1094a2168242f9d7f06fa499e506e"
     },
     {
       "path": "packages/uns-stream/src/uns_stream/processing/__init__.py",
@@ -216,27 +128,7 @@
     },
     {
       "path": "packages/uns-stream/src/uns_stream/sources/__init__.py",
-      "sha256": "b1fad9afc252e5b91b8fa73f78e07888a868ea3c57e86a842d492fc381ebdb97"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/sources/confluence_source.py",
-      "sha256": "9f5c7d2e155635ab7a2be8732f024df0e53a2e7e3018663da8268e9bf72913e8"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/sources/git_source.py",
-      "sha256": "81a20b63c3a8d840909c84c6bcc60d8cca1bb6ca90c49264d878da144fd74161"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/sources/google_drive_source.py",
-      "sha256": "fcc874a847e77d63400cdadfb17d3ac535b5ea46456228d7d9fe5c044829a1d1"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/sources/http_source.py",
-      "sha256": "52a5173b241cc01e89dc9f19bbdc35c14e15009cf1a84618fcb27ea57fdc215b"
-    },
-    {
-      "path": "packages/uns-stream/src/uns_stream/sources/s3_source.py",
-      "sha256": "365390edc9bd606a892d11ba0444de42cea3e8212933781258e27b86842a346e"
+      "sha256": "5f6b285dead62cf786e2425eed6906027b6bd050e6c404afabea61f2030f471a"
     },
     {
       "path": "packages/uns-stream/src/uns_stream/types.py",
@@ -248,7 +140,7 @@
     },
     {
       "path": "packages/zephyr-core/src/zephyr_core/__init__.py",
-      "sha256": "6201b68d474739ade80282d3c3b9796925234344fc42047d9091240d814397e8"
+      "sha256": "e5a23369a910ec292cd5a53098b32c3cc34b179310b43a7228e9b758c3e86f6a"
     },
     {
       "path": "packages/zephyr-core/src/zephyr_core/contracts/__init__.py",
@@ -256,11 +148,7 @@
     },
     {
       "path": "packages/zephyr-core/src/zephyr_core/contracts/v1/__init__.py",
-      "sha256": "ff60d00a5a4add8b877a3ea835b5d57b47b350761ef0f751dfdb11caadcbfff9"
-    },
-    {
-      "path": "packages/zephyr-core/src/zephyr_core/contracts/v1/document_ref.py",
-      "sha256": "b3a2818ec7438035eafe474e46f1da42eef3ce9a2e5f9a10b270286672214981"
+      "sha256": "f7676b8a96edca42d6af24a000871b2659d142bca7e3eac1e6ba069cb3a5104f"
     },
     {
       "path": "packages/zephyr-core/src/zephyr_core/contracts/v1/enums.py",
@@ -271,424 +159,48 @@
       "sha256": "4d014408ba716c379dcf449f8ff72962a00c72a1548f0e666f7f1d91dde6e19d"
     },
     {
-      "path": "packages/zephyr-core/src/zephyr_core/contracts/v1/run_meta.py",
-      "sha256": "99adeb3a9eb4405c2a44416417078d79b79c0b97255b6da002e13e64e2560550"
-    },
-    {
-      "path": "packages/zephyr-core/src/zephyr_core/contracts/v2/__init__.py",
-      "sha256": "834a681c01617718403b6a993ac619cae7a17894e8d732c3f59015036e6b13c4"
-    },
-    {
-      "path": "packages/zephyr-core/src/zephyr_core/contracts/v2/batch_report.py",
-      "sha256": "3c2ef8669433462021b5dbb1181a930c23f96e663ed3a45aef6631de67e285d4"
-    },
-    {
-      "path": "packages/zephyr-core/src/zephyr_core/contracts/v2/config_snapshot.py",
-      "sha256": "c8bb47064f93bef832f86afa909ce782410e1eee40ea6b5db3817d57198a25b6"
-    },
-    {
-      "path": "packages/zephyr-core/src/zephyr_core/contracts/v2/delivery_payload.py",
-      "sha256": "86252c20ade6e2d5091465d79f7acbc3c4a74bbcbc7c5439c27f637b272f8a3c"
-    },
-    {
-      "path": "packages/zephyr-core/src/zephyr_core/contracts/v2/delivery_receipt.py",
-      "sha256": "8c6cda36eb232e29ecec359067fdf2d85201ea45756c7351352c749a658faf5a"
-    },
-    {
-      "path": "packages/zephyr-core/src/zephyr_core/contracts/v2/healthz.py",
-      "sha256": "65b22c1b20d11eb28c994ccb661ae1505872ac12cd6fc459218221f70aa682fa"
-    },
-    {
-      "path": "packages/zephyr-core/src/zephyr_core/contracts/v2/lifecycle.py",
-      "sha256": "57c16a6c56383bc095f776bb8499346c65dc572af9e2abcf29deac7eeb86156c"
-    },
-    {
-      "path": "packages/zephyr-core/src/zephyr_core/contracts/v2/spec.py",
-      "sha256": "2a03695ab7f733cbcfd9dca0816710e505c2db283c0a5210c19ebb24f5687c89"
-    },
-    {
       "path": "packages/zephyr-core/src/zephyr_core/errors/__init__.py",
       "sha256": "5364d1fa746966f3790ae99a5ecb86c669d535ae75e6c81282775810265a3962"
     },
     {
       "path": "packages/zephyr-core/src/zephyr_core/errors/codes.py",
-      "sha256": "5e57d1781ab23720854979f8dbba7dccf0692538e8f426cf7ba9e2faa4b3ca8c"
+      "sha256": "4ba2443d162602b6004b22524c5f3f4407b014cf1e810c2a75ee675ff466259e"
     },
     {
       "path": "packages/zephyr-core/src/zephyr_core/errors/exceptions.py",
       "sha256": "1a3d8716589e5cafb9a79444b5ff8ac9d07e75c974e601f962b48e7f48873171"
     },
     {
-      "path": "packages/zephyr-core/src/zephyr_core/py.typed",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    {
-      "path": "packages/zephyr-core/src/zephyr_core/run_context.py",
-      "sha256": "b2a0aa2132cbc50756c283b96d42ebd3f7be240a61a1d94a0b387f7193751d55"
-    },
-    {
-      "path": "packages/zephyr-core/src/zephyr_core/versioning.py",
-      "sha256": "5c905054bdc4fafacbe348aa34014b10f84bdb4e39159aca9ffbaf5fe1ee1676"
-    },
-    {
       "path": "packages/zephyr-ingest/src/zephyr_ingest/__init__.py",
-      "sha256": "af5a0ddf46ee4197d00773ec54b856b077b983a86ecd440d28e52ebe451fc1c9"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/_internal/__init__.py",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/_internal/artifacts.py",
-      "sha256": "0f1b40b5a80a56f3b8b5a0199e0af186883ab28a5f4ef76af3c173fddb9ed1d8"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/_internal/delivery_dlq.py",
-      "sha256": "db21442fbc99d479793a5b1ab135625ffbdc75e8e20f2b4f4933bd9c3bae5e10"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/_internal/delivery_payload.py",
-      "sha256": "80731e4f982967902884c80cfa0a899c3274648cbf4fb7ddb7fe20368f9c1d11"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/_internal/kafka_producer.py",
-      "sha256": "170b6f9047bd370c4f0c1165186340c3d4c36176f5c783d6c600721064ef6c7f"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/_internal/retry_policy.py",
-      "sha256": "8777bf6db78bc66a2f901f12f19fd8dcedbe4725c9179986abbfbb004dd7bff4"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/_internal/utils.py",
-      "sha256": "b6a73ba05f89d754eced9264d5577b414282bcaf695b2867c5024028efe625f7"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/_internal/weaviate_client.py",
-      "sha256": "ee93f47453fe5648f311d2e9b60c407880ddf82735d7a07404647fadc01f3334"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/cli.py",
-      "sha256": "0ac99f15240d4d84b35595cca6d4d09b94219a088b8afe0d8e844c10b9d67bb1"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/config/__init__.py",
-      "sha256": "f86efb16c2030138f961b9496916fb5630d1304da00baccd044fa1f33ea76221"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/config/argparse_extract.py",
-      "sha256": "3ac18d8f84ca1bcd81928e32b8bae25c7e43e0a3bca070c9b21358fe5db5bd81"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/config/cli_presence.py",
-      "sha256": "74c8a0264958fd264e7a4c443f53cf0865e5fbee8ec37c072573470938177280"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/config/constants.py",
-      "sha256": "85b7d006ce92954b4425309692dcad8eadd8af2e1d586c4d85470f21a90a8504"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/config/env_overlay.py",
-      "sha256": "0b78403bd3e8a6a78dfc049be8750d381098fd7b1d1f461e2aaeba259db4a7c3"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/config/errors.py",
-      "sha256": "8f9e938b527c59ed1ddd63df361a4eaf860b79283ef0fabcbe536b9cb3d0388f"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/config/file_toml_v1.py",
-      "sha256": "f41a046817e042b278f6ca002c6aefa511569622c097c6c2fa4bf90639bb1420"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/config/models.py",
-      "sha256": "6b301a23d14e847dd1558036b02f6b8735ed7ce91bbb2e7520f62e0995e2532a"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/config/snapshot_v1.py",
-      "sha256": "7977a7b17337efd251b539a948e67749c8d94a444b8a4ca466a0ce5479635de6"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/delivery_idempotency.py",
-      "sha256": "1a8ed0a528d706dcb01c1b11b271631a007170cbf025cd5185e54f492d7385bc"
+      "sha256": "c20076a40263ee3a432712fa2447d6d9a7ab7549aaa26477dcdb2fc11c8fec96"
     },
     {
       "path": "packages/zephyr-ingest/src/zephyr_ingest/destinations/__init__.py",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "sha256": "62b395eb58b965a5789205c1015135e4ef9ec061325b473004ca6c66d85ff2da"
     },
     {
       "path": "packages/zephyr-ingest/src/zephyr_ingest/destinations/base.py",
-      "sha256": "7eeaad2ed11e37067bbde5d2db4fecd7f288fe11296bfc5fa82dd9a67ee10790"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/destinations/clickhouse.py",
-      "sha256": "e36710ac41d35073710311846e992ec01cf17b961fb706bf465254629b1e75c3"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/destinations/fanout.py",
-      "sha256": "fe521431e33e75ba3e8c2a55a4df050351d46c5284161ef3d40940f4119ace5e"
+      "sha256": "8da0cf2fee28fb192f21faa17f07b47320106d9471013d88ef89d2190c82a96c"
     },
     {
       "path": "packages/zephyr-ingest/src/zephyr_ingest/destinations/filesystem.py",
-      "sha256": "a2c815e35f61662956d660ad2173d307ff336d6d2ff4316abaa213e88e59585e"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/destinations/kafka.py",
-      "sha256": "91e08ba561c150e479503bce88008e886e7ccc0b2b80470e7196b6bb4c8385af"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/destinations/loki.py",
-      "sha256": "431c954d3c1f64ef94e6a6133745e987bad270887520388ec146c6d38a209e62"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/destinations/mongodb.py",
-      "sha256": "c2cd440852c3833d11c4e5778b280d7e146366f2eac928ccfbdf9283224223bf"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/destinations/opensearch.py",
-      "sha256": "3eca3feadfd364363548ba724991a85b10938eb1666ef64714d9ec6de7014636"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/destinations/s3.py",
-      "sha256": "a0d37e8ac1ed781baea83091e66130ad497f7074ccae4355241e3d7750a844b1"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/destinations/sqlite.py",
-      "sha256": "02a7c703693dc8e15e5803528e47a7e1cc3f6e93c7346ff8cbe9b8ee67cacf27"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/destinations/weaviate.py",
-      "sha256": "dc0fec7c430986171a69347355fecef50beb065b6f3297f3001ed748ffbb919c"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/destinations/webhook.py",
-      "sha256": "384048af00b99aea6a0f6b3c8197cb82aea9dc082dfbc28f58adfe8e63d4f5f5"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/dlq_prune.py",
-      "sha256": "3f90ae49b787a19ac77c5c229208ab298567efbff0303e506bdb67fa816080ff"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/flow_processor.py",
-      "sha256": "327ad99c1f79deac53dcbfb9dec71ae1f2f471722dd59ee659a363cbfd24349a"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/governance_action.py",
-      "sha256": "9e3fe778d4991018d76d26ee925abe7ce6e60065f0355a14ce4fccd5911f5db3"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/health_server.py",
-      "sha256": "a5e23e8fb2496b1c046e9d27da12b32a9eaee0f063da77335dfca926963132ec"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/lock_provider.py",
-      "sha256": "538694ee48866e8e7fd2942dccb8736335bd272d21384c1fa5170411d03b90b5"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/lock_provider_factory.py",
-      "sha256": "bc8a9ad6269953cbc45bfea9f697f7446183e08c4d2dc14d9bc9b0f82d776ae8"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/obs/__init__.py",
-      "sha256": "2e497174a26e876472b48a6a80820a6e370e4140863e1a56de7542ecab3e5329"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/obs/batch_report_v1.py",
-      "sha256": "077fab4c2d1fb708eaa7fbe797e540d297fa6bf26e6c5438bd2c8da8a863afda"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/obs/events.py",
-      "sha256": "2f75f0d2e65fe351b891207f3ab28964e19915fcbe4c2fd1fe3111f959b9dc72"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/obs/prom_export.py",
-      "sha256": "fe1d5bce31ea74cbda22f0345d65f2cab5fb0df412caa9e79a4e3c215c765189"
+      "sha256": "282ec73cb70fb230a94f2b3aeb4ebb85c5a8ed6457f391184735dd4650b741bc"
     },
     {
       "path": "packages/zephyr-ingest/src/zephyr_ingest/py.typed",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/queue_backend.py",
-      "sha256": "63cae5b8c45850edf5da0ba044ed7c21af604f1a2d18fc89c58a3af1e49e3038"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/queue_backend_factory.py",
-      "sha256": "19e10d2e4e5b22344d2fcf962b0c95513512ff4e624f54a2ba569a005268977d"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/queue_inspect.py",
-      "sha256": "453769324fd871cd32c47b69f72ae7ee17b17d6fdc4cb103d9b7b582e1b1a536"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/queue_recover.py",
-      "sha256": "17d59877c9520558673031dce32c109d4ff425a3c58be4b8eb8ce498f4d3bc49"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/replay_delivery.py",
-      "sha256": "ee8d63d19c0787c9d687aded669e08991c1a4b0867ef07ec41755926adda91ed"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/runner.py",
-      "sha256": "18956ccc5390821bfba5866f2601aa9cc215d472d936a9c34ffb1c9453254506"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/source_contracts.py",
-      "sha256": "c8b574f2dd0386d2699efac62fd3ff9edbe30989e72c2827d048b64ec717147f"
-    },
-    {
       "path": "packages/zephyr-ingest/src/zephyr_ingest/sources/__init__.py",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "sha256": "1ea4a1b24a90f7f85149c2c5b802d7ee9e32616c312eac295268153a922478a8"
     },
     {
       "path": "packages/zephyr-ingest/src/zephyr_ingest/sources/local_file.py",
-      "sha256": "872ef000d31840300f09be899e9d8733e7de1629dc730473d8e54cdb3801154e"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/spec/__init__.py",
-      "sha256": "d21ad344b10490b498159c09e78af3a5b926a2c2dd82ed0783a02c7805ad6409"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/spec/argparse_render.py",
-      "sha256": "4d0c62e2816238f23d457ebfdc12550461aec9ff1944f7fdfde682d5f14e26e9"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/spec/registry.py",
-      "sha256": "f03f8f1e46cb4fc9a62783de798573bd296c48a458018a1fba89f7f56093b205"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/spec/toml_template.py",
-      "sha256": "bf6186093bf3ea0c947a4d9d1464563a6fbb0b7ec36a5ce4ed89fa8475020822"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/spec/types.py",
-      "sha256": "e6a97ebb0f555d493243db0ee966cd85611676a956d64f1cd7080bf8147e5d3d"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/spool_queue.py",
-      "sha256": "97b0c6b0709469efb57ca2b7530826c91cfe20dcd13b2f92a0ad330f11a3a992"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/sqlite_lock_provider.py",
-      "sha256": "c424e5a2e13a02f391b7b2121af787258dc2761bfd611a142e8ede46c14498e0"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/sqlite_queue.py",
-      "sha256": "bbbc2b17140f7de048cc8974641e294148fbebac57bb66e4332b0616780e3a8e"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/task_idempotency.py",
-      "sha256": "fe3b8ce9e216ce7d91e8b2a1412d2d1c12928c209f8ef38c1a66127ecc203673"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/task_v1.py",
-      "sha256": "4a80c6ebf9ca9587ee500a6915dbc5354ec6bf84f49d07e4ecf2692eeb5e90e4"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/__init__.py",
-      "sha256": "6b097f8844bf6302ce5c4db2e457f0115673a0bcee88344b4d2356ae4cbb55ed"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p45.py",
-      "sha256": "2588a3ea62f56aa87992d1de89925e1ecfb83cd1332b3b3d785c445ff3338fac"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p45_matrix.py",
-      "sha256": "01ee7aa0eaea6c34b213f6a6245548d87bc9d80f9122d6e3015f95c0efe0adeb"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_benchmark.py",
-      "sha256": "322ab4c043e84daf108b28062a2778a20ec743e0737a2d32140cc1fca5af819a"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_bounded_concurrency.py",
-      "sha256": "ce7f10575666a4fedeb4434cb56b9880f9db6b7aff15135e29634699e465f072"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_capability_domains.py",
-      "sha256": "638273244ae6497432d6f831a3cfea0d74168c97c47aee9052ce279ecd33b2aa"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_fuv_d_fix.py",
-      "sha256": "f83064a5bb790bf8a1875ed8d0657ba83dfb21e74c7405ce54b45763ea57db23"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_governance_audit.py",
-      "sha256": "1d4b0e5d59365b31b276c478b3dc9b2c10f14c08265b160083ea0009bcabcc59"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_m4_s14_closeout.py",
-      "sha256": "23e1cd640fc7bb6df4a77066bd5a3bc04bdd23936c21b682860fa744078ee2a1"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_m5_s1.py",
-      "sha256": "ed57b0c59796b449a73e05d2fb5e754d836e0a0c50d735f3bdaa6d2f7bc72b89"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_m5_s2.py",
-      "sha256": "cac736e4dd0c49fc83f4f63df2d73916a65a815fa0e53d6a2cd7a45b9a5c75b3"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_m5_s3.py",
-      "sha256": "bebb6bcdba870af24e2e9a3a36514360834cb2988c30b6c22280302b4715d3d3"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_m5_s4.py",
-      "sha256": "915f1ffefa6ecdc609e7705a4aa8d1711774766d7a465ec29fbc72d27580a771"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_m5_s5.py",
-      "sha256": "415fd5a01a836652ae1bdfde0bf8a0f22f256d02a6f00bf808b6bfb02ccef256"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_m5_s6.py",
-      "sha256": "1f8b075b25294f79bc6f17f4a7b5db5c2b41a3304fff189fe386d7c58d186e74"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_m5_s7.py",
-      "sha256": "89e4ef5fe7a6c9a3df553307054ab630462b39125b4727ba9fb1b70db9a438fe"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_m5_s8.py",
-      "sha256": "0b5249ddb03636020ef4ea2d80a891cd93ea88e5da70f60aeab436c42ad45de8"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_m5_validation.py",
-      "sha256": "45827196a153198857e74b73610db1b0754d678b27d3dbbce21df347595e3af4"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_product_cuts.py",
-      "sha256": "da2e26d51ff1619191e28889886d3064470e5865e542bbbc72f94b8d98b25715"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_recovery_operator.py",
-      "sha256": "5eac136745de15ec0ed7ee5a0f7dd7f2fad63c4d6d962d1e401ef6873c02ac99"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_runtime_boundary.py",
-      "sha256": "f92af915ab37868e6e540c544eb6f2a6ad1e542aed1d06dea5ce6e79a46b8e3e"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_runtime_contract.py",
-      "sha256": "d47c4dfe25a4fc078f3aeb99941bba68297d83a3d39557b8909c108ed39121c1"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_source_contracts.py",
-      "sha256": "69f6e373971fe1dfcf33da87364aef11eac87757916add5d738b3d72cd52d51e"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/testing/p5_usage_facts.py",
-      "sha256": "bcfd52b95bd7da92e5e0cef73a49970241d1abcb2b40e58ae5689b670c7450d8"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/usage_record.py",
-      "sha256": "b6087121cecfd375f6b5f7d4e527d1a289f6060658834fe856dc2dbc88500155"
-    },
-    {
-      "path": "packages/zephyr-ingest/src/zephyr_ingest/worker_runtime.py",
-      "sha256": "53ce2f00ed8c9f83ba1ad5e09867375886b8917271e54095bf562124e058c563"
+      "sha256": "683e3f93b73e8dead66d45c1b32420a060acd7001853cae5e14395458216c22f"
     },
     {
       "path": "README.md",
-      "sha256": "0032d865425d50eea6b5a1aeeb417e5a809a9577e19e105cbf77b33d79aeb4f2"
+      "sha256": "65e59fe736e54aa7bd22f372df7ef05fd7d216d2384c48e27ea87c30db611497"
     },
     {
       "path": "run_bundle_public_core.py",
@@ -696,7 +208,7 @@
     },
     {
       "path": "runner/p6_m3_public_core_local_runner.py",
-      "sha256": "86da75df6bf304078106320b0dcf2c7285945bf24a933f70bee5f312a256770e"
+      "sha256": "db7a007b1ff1a76238cd0f08ca877a95de183790a65e3acd14aa93845391d6c4"
     }
   ]
 }

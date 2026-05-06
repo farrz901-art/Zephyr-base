@@ -1,2 +1,1 @@
-def hello() -> str:
-    return "Hello from zephyr-ingest!"
+"""Trimmed Zephyr-ingest placeholder surface for Base bundled mode."""

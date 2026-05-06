@@ -5,12 +5,23 @@
   "p5_1_final_sha": "b94e662a3792fd1a253d457bc1f73b38aefb33fd",
   "bundle_kind": "base_public_core_runtime_first_slice",
   "bundle_status": "first_slice_not_full_installer_runtime",
+  "bundle_surface_status": "trimmed_base_txt_md_first_slice",
   "allowed_consumers": [
     "Zephyr-base"
   ],
   "supported_input_extensions": [
     ".txt",
     ".md"
+  ],
+  "allowed_partition_kinds": [
+    "text",
+    "md"
+  ],
+  "allowed_sources": [
+    "local_file"
+  ],
+  "allowed_destinations": [
+    "filesystem"
   ],
   "requires_p45_substrate": false,
   "requires_network": false,
@@ -41,5 +52,12 @@
   ],
   "bundle_lineage_required": true,
   "bundle_execution_requires_zephyr_dev_working_tree": false,
-  "bundle_generation_requires_zephyr_dev_working_tree": true
+  "bundle_generation_requires_zephyr_dev_working_tree": true,
+  "removed_surface": {
+    "non_txt_md_partition_modules_removed": true,
+    "remote_sources_removed": true,
+    "remote_destinations_removed": true,
+    "testing_helpers_removed": true,
+    "queue_worker_observability_governance_removed": true
+  }
 }

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "request_id": "bundled-unsupported-pdf-request",
+  "input_kind": "local_file",
+  "input_path": "tests/fixtures/unsupported_sample_input.pdf",
+  "output_dir": ".tmp/bundled_adapter_unsupported_pdf",
+  "requested_outputs": [
+    "normalized_text",
+    "content_evidence",
+    "receipt",
+    "filesystem_output"
+  ]
+}

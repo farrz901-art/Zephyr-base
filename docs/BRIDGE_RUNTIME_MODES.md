@@ -1,4 +1,4 @@
-﻿# Bridge Runtime Modes
+# Bridge Runtime Modes
 
 ## Fixture mode
 
@@ -20,13 +20,14 @@
 
 ## Bundled public-core mode
 
-- purpose: S5 bundled public-core runtime first slice
+- purpose: S5 bundled public-core runtime first slice with S5-R trimmed public subset hardening
 - fixture_runner_used: false
 - production_runtime: true
 - bundled_runtime_used: true
 - zephyr_dev_working_tree_required: false
 - uses current Python environment
 - installer_runtime_complete: false
+- bundle surface is trimmed to `.txt` / `.md` local file processing plus filesystem output
 - does not require `ZEPHYR_DEV_ROOT` at execution
 
 ## Future installer-bundled mode
@@ -43,4 +44,5 @@
 - S4 cannot be sealed by fixture mode.
 - S5 cannot be sealed by fixture mode.
 - S5 cannot be sealed by `--zephyr-dev-root` execution.
+- S5-R cannot be sealed by a wide bundle surface that exceeds the public first-slice manifest.
 - S5 may rely on the current Python environment, but it must truthfully mark `installer_runtime_complete = false`.

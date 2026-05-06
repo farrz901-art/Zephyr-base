@@ -1,4 +1,4 @@
-﻿name: boundary
+name: boundary
 
 on:
   push:
@@ -24,8 +24,12 @@ jobs:
         run: test -f runtime/public-core-bundle/run_bundle_public_core.py
       - name: Run boundary check
         run: python scripts/check_boundary.py --json
+      - name: Run bundle surface audit
+        run: python scripts/audit_public_core_bundle_surface.py --json
       - name: Run local fixture flow
         run: python scripts/check_local_fixture_flow.py --json
+      - name: Run unsupported surface negative smoke
+        run: python scripts/check_bundle_unsupported_surface.py --json
       - name: Verify real adapter script exists
         run: test -f public-core-bridge/run_public_core_adapter.py
       - name: Verify fixture fallback is opt-in

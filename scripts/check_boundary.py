@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import argparse
 import json
@@ -36,6 +36,7 @@ ALLOWED_DOC_PATHS = {
     'PRODUCT_BOUNDARY.md',
     'docs/SOURCE_LINEAGE.md',
     'docs/BRIDGE_RUNTIME_MODES.md',
+    'runtime/public-core-bundle/README.md',
 }
 BLOCKED_PREFIXES = ('src-tauri/', 'ui/', 'public-core-bridge/', 'runtime/public-core-bundle/')
 ALLOWED_NEGATIVE = (
@@ -57,6 +58,10 @@ ALLOWED_BRIDGE_CONTEXT = (
     'public-core-bundle',
     'installer_runtime_complete',
     'zephyr_dev_adapter_commit_sha',
+    'bundle_surface_status',
+    'allowed_partition_kinds',
+    'allowed_sources',
+    'allowed_destinations',
 )
 ALLOWED_RUNTIME_CONTEXT = (
     'billing_semantics": false',
@@ -70,6 +75,10 @@ ALLOWED_RUNTIME_CONTEXT = (
     'installer_runtime_complete',
     'zephyr_dev_adapter_commit_sha',
     'zephyr_dev_working_tree_required',
+    'bundle_surface_status',
+    'allowed_partition_kinds',
+    'allowed_sources',
+    'allowed_destinations',
 )
 
 
