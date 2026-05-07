@@ -1,4 +1,8 @@
 [package]
-name = "zephyr-base-shadow"
-version = "0.0.0-shadow"
-placeholder_only = true
+name = "zephyr-base-tauri-bridge"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

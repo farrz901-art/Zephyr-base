@@ -1,5 +1,25 @@
 {
-  "placeholder_only": true,
-  "generated_for": "scaffold_planning",
-  "not_production_implementation": true
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Zephyr Base",
+  "version": "0.1.0",
+  "identifier": "art.farrz901.zephyrbase",
+  "build": {
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "",
+    "frontendDist": "../ui",
+    "devUrl": null
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Zephyr Base",
+        "width": 1280,
+        "height": 800,
+        "visible": false
+      }
+    ]
+  },
+  "bundle": {
+    "active": false
+  }
 }

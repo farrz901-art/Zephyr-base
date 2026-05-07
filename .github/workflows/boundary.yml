@@ -16,6 +16,8 @@ jobs:
         run: test -f docs/SOURCE_LINEAGE.md
       - name: Check bridge runtime modes doc exists
         run: test -f docs/BRIDGE_RUNTIME_MODES.md
+      - name: Check Tauri command bridge doc exists
+        run: test -f docs/TAURI_COMMAND_BRIDGE.md
       - name: Check placeholder markers exist
         run: grep -R "Generated scaffold placeholder for P6-M3-S2. Not production implementation." README.md PRODUCT_BOUNDARY.md docs src-tauri ui public-core-bridge packaging tests
       - name: Validate bundle manifest exists
@@ -30,6 +32,8 @@ jobs:
         run: python scripts/check_local_fixture_flow.py --json
       - name: Run unsupported surface negative smoke
         run: python scripts/check_bundle_unsupported_surface.py --json
+      - name: Run Tauri command bridge check
+        run: python scripts/check_tauri_command_bridge.py --json
       - name: Verify real adapter script exists
         run: test -f public-core-bridge/run_public_core_adapter.py
       - name: Verify fixture fallback is opt-in

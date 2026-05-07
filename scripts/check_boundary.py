@@ -16,6 +16,15 @@ FORBIDDEN_TERMS = (
     'private_core_export',
     'zephyr_pro',
 )
+FORBIDDEN_TAURI_NETWORK_TERMS = (
+    'reqwest',
+    'ureq',
+    'surf::',
+    'hyper::client',
+    'tokio::net',
+    'tokio_tungstenite',
+    'websocket',
+)
 TEXT_SUFFIXES = {
     '.md',
     '.py',
@@ -36,6 +45,7 @@ ALLOWED_DOC_PATHS = {
     'PRODUCT_BOUNDARY.md',
     'docs/SOURCE_LINEAGE.md',
     'docs/BRIDGE_RUNTIME_MODES.md',
+    'docs/TAURI_COMMAND_BRIDGE.md',
     'runtime/public-core-bundle/README.md',
 }
 BLOCKED_PREFIXES = ('src-tauri/', 'ui/', 'public-core-bridge/', 'runtime/public-core-bundle/')
@@ -79,6 +89,7 @@ ALLOWED_RUNTIME_CONTEXT = (
     'allowed_partition_kinds',
     'allowed_sources',
     'allowed_destinations',
+    'tauri command bridge',
 )
 
 
@@ -101,6 +112,8 @@ def classify(path: Path, text: str) -> list[dict[str, object]]:
                 'scripts/check_real_adapter_flow.py',
                 'scripts/check_bundled_adapter_flow.py',
                 'scripts/check_boundary.py',
+                'scripts/check_tauri_command_bridge.py',
+                'src-tauri/src/errors.rs',
             } and any(marker in lowered for marker in ALLOWED_RUNTIME_CONTEXT)
             blocked = rel.startswith(BLOCKED_PREFIXES) and not (
                 allowed_boundary or allowed_bridge or allowed_runtime
@@ -120,6 +133,17 @@ def classify(path: Path, text: str) -> list[dict[str, object]]:
                     'classification': classification,
                 }
             )
+        if rel.startswith('src-tauri/src/'):
+            for term in FORBIDDEN_TAURI_NETWORK_TERMS:
+                if term in lowered:
+                    findings.append(
+                        {
+                            'path': rel,
+                            'line': line_no,
+                            'term': term,
+                            'classification': 'blocked',
+                        }
+                    )
     return findings
 
 
