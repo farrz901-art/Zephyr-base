@@ -1,4 +1,4 @@
-﻿import type { BaseContentEvidenceV1, BaseRunResultV1 } from "../contracts/baseRunResult";
+import type { BaseContentEvidenceV1, BaseRunResultV1 } from "../contracts/baseRunResult";
 
 export const sampleErrorResult: BaseRunResultV1 = {
   schema_version: 1,

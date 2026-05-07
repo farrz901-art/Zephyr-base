@@ -1,12 +1,26 @@
-﻿import type {
+import { invoke } from "@tauri-apps/api/core";
+
+import type {
+  BaseContentEvidenceV1,
   BaseRunResultV1,
   LineageSnapshotV1,
-  OutputFolderPlanPayload,
-  ReadRunResultPayload,
   ResultDisplayModel,
   RunLocalFilePayload,
   RunLocalTextPayload,
+  ReadRunResultPayload,
+  OutputFolderPlanPayload,
+  RuntimeModeSummary,
 } from "../contracts/baseRunResult";
+
+export interface OutputFolderPlan {
+  action: "open_output_folder_plan";
+  output_dir: string;
+  implemented: boolean;
+  reason: string;
+  requires_network: boolean;
+  requires_p45_substrate: boolean;
+  commercial_logic_allowed: boolean;
+}
 
 export const TAURI_COMMANDS = {
   run_local_file: "run_local_file",
@@ -16,50 +30,54 @@ export const TAURI_COMMANDS = {
   read_lineage_snapshot: "read_lineage_snapshot",
 } as const;
 
-export interface OutputFolderPlan {
-  action: string;
-  output_dir: string;
-  implemented: boolean;
-  reason: string;
-  requires_network: boolean;
-  requires_p45_substrate: boolean;
-  commercial_logic_allowed: boolean;
+export const runtimeMode: RuntimeModeSummary = {
+  mode: "invoke_ready_not_window_e2e",
+  tauri_invoke_ready: true,
+  tauri_invoke_e2e_verified: false,
+  uses_bundled_adapter: true,
+  uses_current_python_environment: true,
+  embedded_python_runtime: false,
+  wheelhouse_bundled: false,
+  installer_runtime_complete: false,
+};
+
+type TauriCommandName = (typeof TAURI_COMMANDS)[keyof typeof TAURI_COMMANDS];
+
+function hasTauriInvoke(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  const globalWindow = window as Window & { __TAURI_INTERNALS__?: unknown };
+  return globalWindow.__TAURI_INTERNALS__ !== undefined;
 }
 
-export interface BaseBridgeClient {
-  mode: "invoke_ready_not_window_e2e";
-  tauriInvokeReady: boolean;
-  tauriInvokeE2eVerified: boolean;
-  runLocalFile(inputPath: string, outputDir: string): Promise<BaseRunResultV1>;
-  runLocalText(inlineText: string, outputDir: string): Promise<BaseRunResultV1>;
-  readRunResult(outputDir: string): Promise<BaseRunResultV1>;
-  readLineageSnapshot(): Promise<LineageSnapshotV1>;
-  openOutputFolderPlan(outputDir: string): Promise<OutputFolderPlan>;
-}
-
-type InvokeFn = <T>(command: string, payload?: Record<string, unknown>) => Promise<T>;
-
-function resolveInvoke(): InvokeFn | null {
-  const candidate = (globalThis as { __TAURI__?: { core?: { invoke?: InvokeFn } } }).__TAURI__;
-  return candidate?.core?.invoke ?? null;
-}
-
-const invoke = resolveInvoke();
-
-function notVerified(command: string): never {
-  throw new Error(
-    `Tauri invoke is prepared for ${command}, but window e2e verification is not complete in S8.`,
-  );
-}
-
-function invokeCommand<TPayload extends Record<string, unknown>, TResult>(
-  command: string,
+async function invokeJson<TPayload, TResult>(
+  command: TauriCommandName,
   payload?: TPayload,
 ): Promise<TResult> {
-  if (invoke === null) {
-    return notVerified(command);
+  if (!hasTauriInvoke()) {
+    throw new Error(
+      "Tauri invoke is not available in this browser-only shell. Launch the desktop app path for real local runs.",
+    );
   }
-  return invoke<TResult>(command, payload);
+  return invoke<TResult>(command, payload as Record<string, unknown> | undefined);
+}
+
+export function buildEvidenceFromRunResult(result: BaseRunResultV1): BaseContentEvidenceV1 {
+  return {
+    schema_version: 1,
+    evidence_kind:
+      result.content_evidence_kind ?? result.content_evidence_summary.evidence_kind,
+    normalized_text_preview: result.normalized_text_preview,
+    source_kind: "local_artifact",
+    elements_count: result.content_evidence_summary.elements_count,
+    token_marker_found: result.normalized_text_preview.includes("ZEPHYR_BASE"),
+    bundled_runtime_used: result.bundled_runtime_used,
+    zephyr_dev_working_tree_required: result.zephyr_dev_working_tree_required,
+    installer_runtime_complete: result.installer_runtime_complete,
+    requires_network: result.requires_network,
+    requires_p45_substrate: result.requires_p45_substrate,
+  };
 }
 
 export function classifyRunResult(result: BaseRunResultV1): "success" | "failed" {
@@ -71,7 +89,7 @@ export function extractDisplayModel(result: BaseRunResultV1): ResultDisplayModel
     request_id: result.request_id,
     status: result.status,
     normalized_text_preview: result.normalized_text_preview,
-    evidence_kind: result.content_evidence_kind ?? result.content_evidence_summary.evidence_kind,
+    evidence_kind: result.content_evidence_summary.evidence_kind,
     output_root: result.receipt.output_root,
     billing_semantics: result.usage_fact.billing_semantics,
     has_error: result.error !== null,
@@ -79,43 +97,52 @@ export function extractDisplayModel(result: BaseRunResultV1): ResultDisplayModel
   };
 }
 
-export function createRunLifecycle(client: BaseBridgeClient = baseBridgeClient) {
+export function createRunLifecycle(result: BaseRunResultV1) {
   return {
-    async runLocalFile(inputPath: string, outputDir: string): Promise<BaseRunResultV1> {
-      return client.runLocalFile(inputPath, outputDir);
-    },
-    async runLocalText(inlineText: string, outputDir: string): Promise<BaseRunResultV1> {
-      return client.runLocalText(inlineText, outputDir);
-    },
-    async readRunResult(outputDir: string): Promise<BaseRunResultV1> {
-      return client.readRunResult(outputDir);
-    },
-    classifyRunResult,
-    extractDisplayModel,
+    classification: classifyRunResult(result),
+    displayModel: extractDisplayModel(result),
+    evidence: buildEvidenceFromRunResult(result),
   };
 }
 
-export const baseBridgeClient: BaseBridgeClient = {
-  mode: "invoke_ready_not_window_e2e",
-  tauriInvokeReady: invoke !== null,
-  tauriInvokeE2eVerified: false,
-  async runLocalFile(inputPath, outputDir) {
-    const payload: RunLocalFilePayload = { input_path: inputPath, output_dir: outputDir };
-    return invokeCommand<RunLocalFilePayload, BaseRunResultV1>(TAURI_COMMANDS.run_local_file, payload);
+export const baseBridgeClient = {
+  runtimeMode,
+  hasTauriInvoke,
+  async runLocalFile(inputPath: string, outputDir: string): Promise<BaseRunResultV1> {
+    const payload: RunLocalFilePayload = {
+      input_path: inputPath,
+      output_dir: outputDir,
+    };
+    return invokeJson<RunLocalFilePayload, BaseRunResultV1>(
+      TAURI_COMMANDS.run_local_file,
+      payload,
+    );
   },
-  async runLocalText(inlineText, outputDir) {
-    const payload: RunLocalTextPayload = { inline_text: inlineText, output_dir: outputDir };
-    return invokeCommand<RunLocalTextPayload, BaseRunResultV1>(TAURI_COMMANDS.run_local_text, payload);
+  async runLocalText(inlineText: string, outputDir: string): Promise<BaseRunResultV1> {
+    const payload: RunLocalTextPayload = {
+      inline_text: inlineText,
+      output_dir: outputDir,
+    };
+    return invokeJson<RunLocalTextPayload, BaseRunResultV1>(
+      TAURI_COMMANDS.run_local_text,
+      payload,
+    );
   },
-  async readRunResult(outputDir) {
+  async readRunResult(outputDir: string): Promise<BaseRunResultV1> {
     const payload: ReadRunResultPayload = { output_dir: outputDir };
-    return invokeCommand<ReadRunResultPayload, BaseRunResultV1>(TAURI_COMMANDS.read_run_result, payload);
+    return invokeJson<ReadRunResultPayload, BaseRunResultV1>(
+      TAURI_COMMANDS.read_run_result,
+      payload,
+    );
   },
-  async readLineageSnapshot() {
-    return invokeCommand<Record<string, never>, LineageSnapshotV1>(TAURI_COMMANDS.read_lineage_snapshot);
+  async readLineageSnapshot(): Promise<LineageSnapshotV1> {
+    return invokeJson<undefined, LineageSnapshotV1>(TAURI_COMMANDS.read_lineage_snapshot);
   },
-  async openOutputFolderPlan(outputDir) {
+  async openOutputFolderPlan(outputDir: string): Promise<OutputFolderPlan> {
     const payload: OutputFolderPlanPayload = { output_dir: outputDir };
-    return invokeCommand<OutputFolderPlanPayload, OutputFolderPlan>(TAURI_COMMANDS.open_output_folder_plan, payload);
+    return invokeJson<OutputFolderPlanPayload, OutputFolderPlan>(
+      TAURI_COMMANDS.open_output_folder_plan,
+      payload,
+    );
   },
 };

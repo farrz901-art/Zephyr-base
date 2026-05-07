@@ -1,55 +1,31 @@
-﻿# UI Tauri Invoke Integration
+# UI Tauri Invoke Integration
 
-P6-M3-S8 verifies command-name and payload alignment between the Zephyr Base Web UI shell and the Rust/Tauri command bridge.
+Zephyr Base S8 and later treats `base_run_result_v1` as the single result contract that
+the UI consumes after local processing finishes.
 
-## Scope
+## What S8/S9 verify
 
-- The Rust/Tauri layer remains the desktop shell and command bridge.
-- The bundled Python adapter remains the local public-core runtime first slice.
-- The UI consumes `base_run_result_v1` as the single result source.
-- The UI does not own processing logic.
-- The UI does not call Python directly.
-- The UI does not call Zephyr-dev.
-- The UI does not call cloud, network services, Web-core, Pro, or commercial logic.
-- The Base runtime still uses the current Python environment.
-- `installer_runtime_complete=false` remains true in this slice.
+- UI command names and payload fields align with the Rust/Tauri command bridge.
+- Windowless CLI smoke is used as an invoke-equivalent validation path.
+- S9 adds a real Tauri app registration path and a built UI dist baseline.
+- Full window click automation is still optional and is not claimed unless explicitly run.
 
-## S8 verification approach
+## Ownership
 
-S8 does not require opening a Tauri window.
-Instead, it verifies the same command surface through a windowless Rust CLI / command-bridge path that uses the bundled adapter and produces real `run_result.json` artifacts.
+- UI does not own processing logic.
+- UI does not call Python directly.
+- UI does not call Zephyr-dev.
+- UI does not call cloud, Web-core, or any network service.
+- UI does not contain license, entitlement, payment, billing, quota, or risk logic.
 
-This makes S8 an invoke-equivalent smoke rather than a full window e2e proof.
+## Runtime truth
 
-## Command alignment
-
-The UI client and Rust bridge align on these command names:
-
-- `run_local_file`
-- `run_local_text`
-- `read_run_result`
-- `open_output_folder_plan`
-- `read_lineage_snapshot`
-
-The UI payloads stay limited to local Base first-slice needs:
-
-- `run_local_file`: `input_path`, `output_dir`
-- `run_local_text`: `inline_text`, `output_dir`
-- `read_run_result`: `output_dir`
-- `open_output_folder_plan`: `output_dir`
-
-## Result lifecycle
-
-S8 verifies the local result lifecycle in four stages:
-
-1. prepare request payload
-2. invoke the Rust/Tauri bridge or read an existing artifact
-3. consume `run_result.json`
-4. classify and expose success / error / normalized text / evidence / receipt / usage fact / output folder plan
+- UI invokes Rust/Tauri commands.
+- Rust/Tauri invokes the bundled adapter.
+- The bundled adapter still uses the current Python environment in this first slice.
+- `installer_runtime_complete=false` remains true until a later M3 packaging slice lands.
 
 ## Current limitation
 
-- Tauri window e2e is still not fully proven in S8.
-- S8 is not an installer.
-- S8 is not a release build.
-- S8 does not provide embedded Python or wheelhouse packaging yet.
+The Tauri window path is now launch-ready and command-registered, but full click-driven
+desktop e2e is still a later manual or automated proof step.

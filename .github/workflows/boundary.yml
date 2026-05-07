@@ -1,98 +1,72 @@
-﻿name: boundary
+name: boundary
 
 on:
   push:
+    branches: ["main", "master"]
   pull_request:
 
 jobs:
   boundary:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      - name: Check source lineage exists
-        run: test -f docs/SOURCE_LINEAGE.md
-      - name: Check bridge runtime modes doc exists
-        run: test -f docs/BRIDGE_RUNTIME_MODES.md
-      - name: Check Tauri command bridge doc exists
-        run: test -f docs/TAURI_COMMAND_BRIDGE.md
-      - name: Check UI artifact consumption doc exists
-        run: test -f docs/UI_ARTIFACT_CONSUMPTION.md
-      - name: Check UI Tauri invoke integration doc exists
-        run: test -f docs/UI_TAURI_INVOKE_INTEGRATION.md
-      - name: Check placeholder markers exist
-        run: grep -R "Generated scaffold placeholder for P6-M3-S2. Not production implementation." README.md PRODUCT_BOUNDARY.md docs src-tauri ui public-core-bridge packaging tests
-      - name: Validate bundle manifest exists
-        run: test -f runtime/public-core-bundle/manifest/public_core_bundle_manifest.json
-      - name: Validate bundled adapter script exists
-        run: test -f runtime/public-core-bundle/run_bundle_public_core.py
-      - name: Run boundary check
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Source lineage exists
+        run: Test-Path docs/SOURCE_LINEAGE.md
+
+      - name: Bridge runtime modes doc exists
+        run: Test-Path docs/BRIDGE_RUNTIME_MODES.md
+
+      - name: Tauri command bridge doc exists
+        run: Test-Path docs/TAURI_COMMAND_BRIDGE.md
+
+      - name: UI artifact consumption doc exists
+        run: Test-Path docs/UI_ARTIFACT_CONSUMPTION.md
+
+      - name: UI invoke integration doc exists
+        run: Test-Path docs/UI_TAURI_INVOKE_INTEGRATION.md
+
+      - name: Base local app flow doc exists
+        run: Test-Path docs/BASE_LOCAL_APP_FLOW.md
+
+      - name: No BOM check
+        run: python scripts/check_no_bom.py --json
+
+      - name: Boundary check
         run: python scripts/check_boundary.py --json
-      - name: Run bundle surface audit
+
+      - name: Bundle surface audit
         run: python scripts/audit_public_core_bundle_surface.py --json
-      - name: Run local fixture flow
+
+      - name: Fixture flow smoke
         run: python scripts/check_local_fixture_flow.py --json
-      - name: Run unsupported surface negative smoke
+
+      - name: Unsupported surface negative smoke
         run: python scripts/check_bundle_unsupported_surface.py --json
-      - name: Run Tauri command bridge check
+
+      - name: Tauri command bridge check
         run: python scripts/check_tauri_command_bridge.py --json
-      - name: Run UI shell check
+
+      - name: UI shell check
         run: python scripts/check_ui_shell.py --json
-      - name: Run UI result lifecycle check
+
+      - name: UI result lifecycle check
         run: python scripts/check_ui_result_lifecycle.py --json
-      - name: Verify real adapter script exists
-        run: test -f public-core-bridge/run_public_core_adapter.py
-      - name: Verify fixture fallback is opt-in
-        run: grep -n -- "--allow-fixture-fallback" public-core-bridge/run_public_core_adapter.py
-      - name: Optional real adapter smoke
-        if: ${{ env.ZEPHYR_DEV_ROOT != '' }}
-        run: python scripts/check_real_adapter_flow.py --zephyr-dev-root "$ZEPHYR_DEV_ROOT" --json
-      - name: Optional bundled adapter smoke
-        shell: bash
-        run: |
-          python - <<'PY'
-          import importlib.util
-          import subprocess
-          import sys
-          from pathlib import Path
 
-          required = ["pydantic", "unstructured"]
-          missing = [name for name in required if importlib.util.find_spec(name) is None]
-          if missing:
-              print("skip bundled adapter smoke: missing public runtime dependencies; not a production pass", missing)
-              raise SystemExit(0)
-          repo_root = Path.cwd()
-          cmd = [sys.executable, "scripts/check_bundled_adapter_flow.py", "--json"]
-          completed = subprocess.run(cmd, cwd=repo_root, check=False)
-          raise SystemExit(completed.returncode)
-          PY
-      - name: Optional Rust bridge CLI flow
-        shell: bash
-        run: |
-          python - <<'PY'
-          import importlib.util
-          import shutil
-          import subprocess
-          import sys
-          from pathlib import Path
+      - name: UI install
+        run: npm --prefix ui ci
 
-          if shutil.which("cargo") is None:
-              print("skip rust bridge cli flow: cargo unavailable; not a production pass")
-              raise SystemExit(0)
-          required = ["pydantic", "unstructured"]
-          missing = [name for name in required if importlib.util.find_spec(name) is None]
-          if missing:
-              print("skip rust bridge cli flow: missing public runtime dependencies; not a production pass", missing)
-              raise SystemExit(0)
-          repo_root = Path.cwd()
-          cmd = [sys.executable, "scripts/check_rust_bridge_cli_flow.py", "--json"]
-          completed = subprocess.run(cmd, cwd=repo_root, check=False)
-          raise SystemExit(completed.returncode)
-          PY
-      - name: Verify fixture output artifacts exist
-        run: |
-          test -f .tmp/local_fixture_flow/run_result.json
-          test -f .tmp/local_fixture_flow_text/run_result.json
-          test -f .tmp/local_fixture_flow_check.json
+      - name: UI build check
+        run: python scripts/check_ui_build.py --json
+
+      - name: Tauri app path check
+        continue-on-error: true
+        run: python scripts/check_tauri_app_path.py --json

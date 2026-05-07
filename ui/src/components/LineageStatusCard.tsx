@@ -6,7 +6,10 @@ interface LineageStatusCardProps {
 }
 
 export function LineageStatusCard({ lineage, runtimeMode }: LineageStatusCardProps) {
-  const publicLineage = lineage.public_export_lineage as { zephyr_dev_source_sha?: string; p5_1_final_sha?: string };
+  const publicLineage = lineage.public_export_lineage as {
+    zephyr_dev_source_sha?: string;
+    p5_1_final_sha?: string;
+  };
   return (
     <section className="panel-card wide-card">
       <h2>Lineage and runtime status</h2>
@@ -33,7 +36,7 @@ export function LineageStatusCard({ lineage, runtimeMode }: LineageStatusCardPro
         </div>
         <div>
           <dt>Tauri invoke E2E</dt>
-          <dd>{String(runtimeMode.tauriInvokeE2eVerified)}</dd>
+          <dd>{String(runtimeMode.tauri_invoke_e2e_verified)}</dd>
         </div>
       </dl>
     </section>

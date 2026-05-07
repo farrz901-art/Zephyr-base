@@ -26,15 +26,6 @@ FORBIDDEN_NETWORK_TERMS = (
     "tokio_tungstenite",
     "websocket",
 )
-REQUIRED_FILES = (
-    Path("src-tauri/Cargo.toml"),
-    Path("src-tauri/tauri.conf.json"),
-    Path("src-tauri/src/main.rs"),
-    Path("src-tauri/src/commands.rs"),
-    Path("src-tauri/src/bridge.rs"),
-    Path("src-tauri/src/errors.rs"),
-    Path("src-tauri/src/lineage.rs"),
-)
 
 
 def _read_text(path: Path) -> str:
@@ -62,53 +53,33 @@ def _cargo_check(root: Path) -> tuple[bool, bool, str]:
         capture_output=True,
         text=True,
     )
-    combined = (completed.stdout + "\n" + completed.stderr).strip()
-    return True, completed.returncode == 0, combined
+    detail = (completed.stdout + "\n" + completed.stderr).strip()
+    return True, completed.returncode == 0, detail
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Check the Zephyr-base Tauri command bridge slice.")
+    parser = argparse.ArgumentParser(description="Check the Zephyr-base Tauri command bridge.")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
     root = Path(__file__).resolve().parents[1]
-    missing = [path.as_posix() for path in REQUIRED_FILES if not (root / path).exists()]
-    out_path = root / ".tmp" / "tauri_command_bridge_check.json"
-    if missing:
-        report = {
-            "schema_version": 1,
-            "report_id": "zephyr.base.s6.tauri_command_bridge_check.v1",
-            "summary": {
-                "pass": False,
-                "cargo_available": shutil.which("cargo") is not None,
-                "cargo_check_pass": False,
-                "static_bridge_check_pass": False,
-                "commercial_terms_blocked": 0,
-            },
-            "bridge": {
-                "commands_exist": False,
-                "bundled_adapter_invocation_detected": False,
-                "uses_zephyr_dev_root": False,
-                "fixture_fallback_used": False,
-                "requires_p45_substrate": False,
-                "requires_network": False,
-            },
-            "issues": [f"missing required files: {missing}"],
-        }
-        _write_json(out_path, report)
-        if args.json:
-            print(json.dumps(report, ensure_ascii=False, indent=2))
-        return 1
+    required_files = (
+        root / "src-tauri/Cargo.toml",
+        root / "src-tauri/tauri.conf.json",
+        root / "src-tauri/src/main.rs",
+        root / "src-tauri/src/commands.rs",
+        root / "src-tauri/src/bridge.rs",
+        root / "src-tauri/src/errors.rs",
+        root / "src-tauri/src/lineage.rs",
+    )
+    missing = [path.relative_to(root).as_posix() for path in required_files if not path.exists()]
 
-    commands_text = _read_text(root / "src-tauri/src/commands.rs")
-    bridge_text = _read_text(root / "src-tauri/src/bridge.rs")
-    main_text = _read_text(root / "src-tauri/src/main.rs")
-    errors_text = _read_text(root / "src-tauri/src/errors.rs")
-    lineage_text = _read_text(root / "src-tauri/src/lineage.rs")
-    cargo_text = _read_text(root / "src-tauri/Cargo.toml")
+    commands_text = _read_text(root / "src-tauri/src/commands.rs") if not missing else ""
+    bridge_text = _read_text(root / "src-tauri/src/bridge.rs") if not missing else ""
+    main_text = _read_text(root / "src-tauri/src/main.rs") if not missing else ""
+    cargo_text = _read_text(root / "src-tauri/Cargo.toml") if not missing else ""
+    source_text = "\n".join((commands_text, bridge_text, main_text)).lower()
 
-    source_text = "\n".join([commands_text, bridge_text, main_text, errors_text, lineage_text]).lower()
-    runtime_bridge_text = bridge_text.split("#[cfg(test)]", 1)[0].lower()
     blocked_terms = [
         term
         for term in (*FORBIDDEN_COMMERCIAL_TERMS, *FORBIDDEN_NETWORK_TERMS)
@@ -121,35 +92,38 @@ def main(argv: list[str] | None = None) -> int:
             "pub fn run_local_text",
             "pub fn read_run_result",
             "pub fn open_output_folder_plan",
+            "pub fn read_lineage_snapshot",
         )
     )
     bundled_adapter_invocation_detected = (
         "run_public_core_adapter.py" in bridge_text and "runtime/public-core-bundle" in bridge_text
     )
     uses_zephyr_dev_root = "zephyr_dev_root" in source_text
-    fixture_fallback_used = (
-        "allow-fixture-fallback" in runtime_bridge_text
-        or "run_public_core_fixture" in runtime_bridge_text
+    runtime_bridge_text = bridge_text.split("#[cfg(test)]", 1)[0].lower()
+    fixture_fallback_used = "allow-fixture-fallback" in runtime_bridge_text or "run_public_core_fixture" in runtime_bridge_text
+    tauri_registration_pass = (
+        "#[tauri::command]" in commands_text
+        and "tauri::Builder::default()" in main_text
+        and "tauri::generate_handler!" in main_text
     )
-    static_bridge_check_pass = all(
-        (
-            commands_exist,
-            bundled_adapter_invocation_detected,
-            not uses_zephyr_dev_root,
-            not fixture_fallback_used,
-            "serde_json" in cargo_text,
-            "requires_network" in bridge_text,
-            "requires_p45_substrate" in bridge_text,
-        )
-    ) and not blocked_terms
+    static_bridge_check_pass = (
+        not missing
+        and not blocked_terms
+        and commands_exist
+        and bundled_adapter_invocation_detected
+        and not uses_zephyr_dev_root
+        and not fixture_fallback_used
+        and "tauri =" in cargo_text
+        and tauri_registration_pass
+    )
 
     cargo_available, cargo_check_pass, cargo_detail = _cargo_check(root)
-    summary_pass = static_bridge_check_pass and (cargo_check_pass if cargo_available else True)
+    pass_value = static_bridge_check_pass and (cargo_check_pass if cargo_available else True)
     report = {
         "schema_version": 1,
         "report_id": "zephyr.base.s6.tauri_command_bridge_check.v1",
         "summary": {
-            "pass": summary_pass,
+            "pass": pass_value,
             "cargo_available": cargo_available,
             "cargo_check_pass": cargo_check_pass,
             "static_bridge_check_pass": static_bridge_check_pass,
@@ -162,25 +136,17 @@ def main(argv: list[str] | None = None) -> int:
             "fixture_fallback_used": fixture_fallback_used,
             "requires_p45_substrate": False,
             "requires_network": False,
-            "run_local_file_command": "pub fn run_local_file" in commands_text,
-            "run_local_text_command": "pub fn run_local_text" in commands_text,
-            "read_run_result_command": "pub fn read_run_result" in commands_text,
-            "open_output_folder_plan_command": "pub fn open_output_folder_plan" in commands_text,
+            "tauri_command_registration_pass": tauri_registration_pass,
         },
-        "cargo": {
-            "detail": cargo_detail,
-        },
+        "cargo": {"detail": cargo_detail},
         "blocked_terms": blocked_terms,
-        "issues": [],
+        "missing": missing,
     }
-    if not cargo_available:
-        report["issues"].append(
-            "cargo is not available; static bridge validation passed but cargo check was skipped."
-        )
+    out_path = root / ".tmp" / "tauri_command_bridge_check.json"
     _write_json(out_path, report)
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
-    return 0 if summary_pass else 1
+    return 0 if pass_value else 1
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-﻿# Source Lineage
+# Source Lineage
 
 Generated scaffold placeholder for P6-M3-S2. Not production implementation.
 

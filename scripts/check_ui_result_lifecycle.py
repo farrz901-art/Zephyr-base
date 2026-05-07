@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import argparse
 import json
@@ -59,15 +59,21 @@ def main(argv: list[str] | None = None) -> int:
     sample_success_text = _read_text(root / "ui/src/fixtures/sampleRunResult.ts")
     sample_error_text = _read_text(root / "ui/src/fixtures/sampleErrorResult.ts")
     app_text = _read_text(root / "ui/src/App.tsx")
+    bridge_client_text = _read_text(root / "ui/src/services/baseBridgeClient.ts")
 
-    real_run_result_path = root / ".tmp/s8_tauri_bridge_cli_flow/run_result.json"
-    real_run_result = _load_json(real_run_result_path) if real_run_result_path.exists() else None
+    candidates = [
+        root / ".tmp/s9_tauri_app_path/run_result.json",
+        root / ".tmp/s8_tauri_bridge_cli_flow/run_result.json",
+    ]
+    real_run_result_path = next((path for path in candidates if path.exists()), None)
+    real_run_result = _load_json(real_run_result_path) if real_run_result_path else None
+
     lifecycle_pass = all(marker in contract_text for marker in REQUIRED_CONTRACT_MARKERS)
     sample_success_consumed = 'status: "success"' in sample_success_text and "billing_semantics: false" in sample_success_text
     sample_error_consumed = 'status: "failed"' in sample_error_text and "secret_safe: true" in sample_error_text
     real_run_result_consumed = real_run_result is not None and _has_required_result_shape(real_run_result)
     display_model_fields_covered = all(
-        marker in app_text
+        marker in app_text or marker in bridge_client_text
         for marker in (
             "ResultSummary",
             "NormalizedTextPreview",
@@ -77,14 +83,17 @@ def main(argv: list[str] | None = None) -> int:
             "ErrorDiagnosisPanel",
             "OutputFolderPlan",
             "LineageStatusCard",
+            "extractDisplayModel",
         )
     )
     error_display_covered = "ErrorDiagnosisPanel" in app_text
     output_folder_plan_covered = "OutputFolderPlan" in app_text
+
     if real_run_result is not None:
         usage_fact = real_run_result.get("usage_fact", {})
         if not isinstance(usage_fact, dict) or usage_fact.get("billing_semantics") is not False:
             lifecycle_pass = False
+
     report = {
         "schema_version": 1,
         "report_id": "zephyr.base.s8.ui_result_lifecycle_check.v1",
@@ -98,7 +107,7 @@ def main(argv: list[str] | None = None) -> int:
                     error_display_covered,
                     output_folder_plan_covered,
                 )
-            ) and (real_run_result_consumed if real_run_result_path.exists() else True),
+            ) and (real_run_result_consumed if real_run_result_path else True),
             "real_run_result_consumed": real_run_result_consumed,
             "sample_success_consumed": sample_success_consumed,
             "sample_error_consumed": sample_error_consumed,
@@ -106,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
             "error_display_covered": error_display_covered,
             "output_folder_plan_covered": output_folder_plan_covered,
         },
-        "real_run_result_path": real_run_result_path.as_posix(),
+        "real_run_result_path": real_run_result_path.as_posix() if real_run_result_path else None,
     }
     _write_json(root / ".tmp/ui_result_lifecycle_check.json", report)
     if args.json:

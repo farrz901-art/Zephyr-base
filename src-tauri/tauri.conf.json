@@ -4,18 +4,20 @@
   "version": "0.1.0",
   "identifier": "art.farrz901.zephyrbase",
   "build": {
-    "beforeDevCommand": "",
-    "beforeBuildCommand": "",
-    "frontendDist": "../ui",
+    "beforeDevCommand": "npm --prefix ../ui run build",
+    "beforeBuildCommand": "npm --prefix ../ui run build",
+    "frontendDist": "../ui/dist",
     "devUrl": null
   },
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Zephyr Base",
         "width": 1280,
         "height": 800,
-        "visible": false
+        "visible": true,
+        "resizable": true
       }
     ]
   },

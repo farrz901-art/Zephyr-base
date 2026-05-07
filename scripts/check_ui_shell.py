@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import argparse
 import json
@@ -7,7 +7,10 @@ from pathlib import Path
 REQUIRED_FILES = [
     Path("docs/UI_ARTIFACT_CONSUMPTION.md"),
     Path("docs/UI_TAURI_INVOKE_INTEGRATION.md"),
+    Path("docs/BASE_LOCAL_APP_FLOW.md"),
     Path("ui/package.json"),
+    Path("ui/tsconfig.json"),
+    Path("ui/vite.config.ts"),
     Path("ui/index.html"),
     Path("ui/src/main.tsx"),
     Path("ui/src/App.tsx"),
@@ -30,6 +33,8 @@ REQUIRED_FILES = [
     Path("ui/src/components/OutputFolderPlan.tsx"),
     Path("ui/src/styles/tokens.css"),
     Path("scripts/check_ui_result_lifecycle.py"),
+    Path("scripts/check_ui_build.py"),
+    Path("scripts/check_tauri_app_path.py"),
 ]
 FORBIDDEN_COMMERCIAL_TERMS = (
     "license_verify",
@@ -80,12 +85,13 @@ def main(argv: list[str] | None = None) -> int:
     ui_text = "\n".join(_read_text(path).lower() for path in ui_files)
     forbidden_hits = [term for term in FORBIDDEN_COMMERCIAL_TERMS if term in ui_text]
     network_hits = [term for term in FORBIDDEN_NETWORK_TERMS if term in ui_text]
-    sample_success_text = _read_text(root / "ui/src/fixtures/sampleRunResult.ts").lower()
-    sample_error_text = _read_text(root / "ui/src/fixtures/sampleErrorResult.ts").lower()
     app_text = _read_text(root / "ui/src/App.tsx")
     bridge_client_text = _read_text(root / "ui/src/services/baseBridgeClient.ts")
     commands_rs_text = _read_text(root / "src-tauri/src/commands.rs")
     main_rs_text = _read_text(root / "src-tauri/src/main.rs")
+    sample_success_text = _read_text(root / "ui/src/fixtures/sampleRunResult.ts").lower()
+    sample_error_text = _read_text(root / "ui/src/fixtures/sampleErrorResult.ts").lower()
+
     format_hits = [fmt for fmt in SUPPORTED_FORMATS if fmt in app_text]
     unsupported_hits = [term for term in UNSUPPORTED_CLAIMS if term in ui_text]
     command_hits = [name for name in COMMAND_NAMES if name in bridge_client_text]
@@ -93,13 +99,31 @@ def main(argv: list[str] | None = None) -> int:
     cli_command_hits = [name.replace("_", "-") for name in COMMAND_NAMES if name.replace("_", "-") in main_rs_text]
     direct_python_hits = [term for term in ("run_public_core_adapter.py", "subprocess", "python.exe") if term in ui_text]
     zephyr_dev_root_hits = [term for term in ("zephyr_dev_root", "zephyr-dev-root") if term in ui_text]
-    invoke_mode_declared = "invoke_ready_not_window_e2e" in bridge_client_text and "window e2e" in app_text.lower()
+    invoke_mode_declared = "invoke_ready_not_window_e2e" in bridge_client_text and "tauri invoke dev mode" in app_text.lower()
+    ui_real_run_controls_present = all(
+        label in app_text
+        for label in ("Run local text", "Run local file path", "Read latest result")
+    )
+    ui_build_script_exists = '"build"' in _read_text(root / "ui/package.json")
+    tauri_command_registration_exists = "#[tauri::command]" in commands_rs_text and "tauri::Builder::default()" in main_rs_text
 
     report = {
         "schema_version": 1,
         "report_id": "zephyr.base.s7.ui_shell_check.v1",
         "summary": {
-            "pass": not missing and not forbidden_hits and not network_hits and not unsupported_hits and not direct_python_hits and not zephyr_dev_root_hits and len(command_hits) == len(COMMAND_NAMES) and len(rust_command_hits) == len(COMMAND_NAMES) and len(cli_command_hits) == len(COMMAND_NAMES) and invoke_mode_declared,
+            "pass": not missing
+            and not forbidden_hits
+            and not network_hits
+            and not unsupported_hits
+            and not direct_python_hits
+            and not zephyr_dev_root_hits
+            and ui_real_run_controls_present
+            and ui_build_script_exists
+            and tauri_command_registration_exists
+            and len(command_hits) == len(COMMAND_NAMES)
+            and len(rust_command_hits) == len(COMMAND_NAMES)
+            and len(cli_command_hits) == len(COMMAND_NAMES)
+            and invoke_mode_declared,
             "required_files_exist": len(missing) == 0,
             "commercial_terms_blocked": len(forbidden_hits),
             "network_calls_blocked": len(network_hits),
@@ -109,6 +133,9 @@ def main(argv: list[str] | None = None) -> int:
             "ui_does_not_call_python_directly": len(direct_python_hits) == 0,
             "ui_does_not_use_zephyr_dev_root": len(zephyr_dev_root_hits) == 0,
             "invoke_ready_not_window_e2e_declared": invoke_mode_declared,
+            "ui_real_run_controls_present": ui_real_run_controls_present,
+            "ui_build_script_exists": ui_build_script_exists,
+            "tauri_command_registration_exists": tauri_command_registration_exists,
         },
         "missing_files": missing,
         "forbidden_hits": forbidden_hits,
@@ -130,4 +157,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

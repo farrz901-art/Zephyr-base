@@ -1,4 +1,4 @@
-﻿export interface BaseErrorV1 {
+export interface BaseErrorV1 {
   schema_version: number;
   error_code: string;
   category: "input" | "processing" | "dependency" | "filesystem" | "unknown";

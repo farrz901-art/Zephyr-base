@@ -1,4 +1,4 @@
-﻿import type { BaseContentEvidenceV1, BaseRunResultV1, LineageSnapshotV1, RuntimeModeSummary } from "../contracts/baseRunResult";
+import type { BaseContentEvidenceV1, BaseRunResultV1, LineageSnapshotV1, RuntimeModeSummary } from "../contracts/baseRunResult";
 
 export const sampleSuccessResult: BaseRunResultV1 = {
   schema_version: 1,

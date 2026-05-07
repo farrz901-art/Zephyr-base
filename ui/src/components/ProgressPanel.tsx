@@ -25,11 +25,11 @@ export function ProgressPanel({ status, detail, runtimeMode }: ProgressPanelProp
         </div>
         <div>
           <dt>Tauri invoke ready</dt>
-          <dd>{String(runtimeMode.tauriInvokeReady)}</dd>
+          <dd>{String(runtimeMode.tauri_invoke_ready)}</dd>
         </div>
         <div>
           <dt>E2E verified</dt>
-          <dd>{String(runtimeMode.tauriInvokeE2eVerified)}</dd>
+          <dd>{String(runtimeMode.tauri_invoke_e2e_verified)}</dd>
         </div>
       </dl>
     </section>
