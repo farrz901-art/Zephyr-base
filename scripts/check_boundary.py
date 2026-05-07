@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -36,6 +36,7 @@ ALLOWED_DOC_PATHS = {
     'docs/BRIDGE_RUNTIME_MODES.md',
     'docs/TAURI_COMMAND_BRIDGE.md',
     'docs/UI_ARTIFACT_CONSUMPTION.md',
+    'docs/UI_TAURI_INVOKE_INTEGRATION.md',
     'runtime/public-core-bundle/README.md',
 }
 BLOCKED_PREFIXES = ('src-tauri/', 'ui/', 'public-core-bridge/', 'runtime/public-core-bundle/')
@@ -52,6 +53,7 @@ ALLOWED_RUNTIME_CONTEXT = (
     'public-core-bundle', 'installer_runtime_complete', 'zephyr_dev_adapter_commit_sha',
     'zephyr_dev_working_tree_required', 'bundle_surface_status', 'allowed_partition_kinds',
     'allowed_sources', 'allowed_destinations', 'tauri command bridge', 'technical usage facts only',
+    'run_local_file', 'run_local_text', 'read_run_result', 'open_output_folder_plan', 'read_lineage_snapshot',
 )
 
 
@@ -76,6 +78,8 @@ def classify(path: Path, text: str) -> list[dict[str, object]]:
                 'scripts/check_boundary.py',
                 'scripts/check_tauri_command_bridge.py',
                 'scripts/check_ui_shell.py',
+                'scripts/check_ui_result_lifecycle.py',
+                'scripts/check_rust_bridge_cli_flow.py',
                 'src-tauri/src/errors.rs',
             } and any(marker in lowered for marker in ALLOWED_RUNTIME_CONTEXT)
             blocked = rel.startswith(BLOCKED_PREFIXES) and not (

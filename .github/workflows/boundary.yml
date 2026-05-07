@@ -1,4 +1,4 @@
-name: boundary
+﻿name: boundary
 
 on:
   push:
@@ -20,6 +20,8 @@ jobs:
         run: test -f docs/TAURI_COMMAND_BRIDGE.md
       - name: Check UI artifact consumption doc exists
         run: test -f docs/UI_ARTIFACT_CONSUMPTION.md
+      - name: Check UI Tauri invoke integration doc exists
+        run: test -f docs/UI_TAURI_INVOKE_INTEGRATION.md
       - name: Check placeholder markers exist
         run: grep -R "Generated scaffold placeholder for P6-M3-S2. Not production implementation." README.md PRODUCT_BOUNDARY.md docs src-tauri ui public-core-bridge packaging tests
       - name: Validate bundle manifest exists
@@ -38,6 +40,8 @@ jobs:
         run: python scripts/check_tauri_command_bridge.py --json
       - name: Run UI shell check
         run: python scripts/check_ui_shell.py --json
+      - name: Run UI result lifecycle check
+        run: python scripts/check_ui_result_lifecycle.py --json
       - name: Verify real adapter script exists
         run: test -f public-core-bridge/run_public_core_adapter.py
       - name: Verify fixture fallback is opt-in
@@ -61,6 +65,29 @@ jobs:
               raise SystemExit(0)
           repo_root = Path.cwd()
           cmd = [sys.executable, "scripts/check_bundled_adapter_flow.py", "--json"]
+          completed = subprocess.run(cmd, cwd=repo_root, check=False)
+          raise SystemExit(completed.returncode)
+          PY
+      - name: Optional Rust bridge CLI flow
+        shell: bash
+        run: |
+          python - <<'PY'
+          import importlib.util
+          import shutil
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          if shutil.which("cargo") is None:
+              print("skip rust bridge cli flow: cargo unavailable; not a production pass")
+              raise SystemExit(0)
+          required = ["pydantic", "unstructured"]
+          missing = [name for name in required if importlib.util.find_spec(name) is None]
+          if missing:
+              print("skip rust bridge cli flow: missing public runtime dependencies; not a production pass", missing)
+              raise SystemExit(0)
+          repo_root = Path.cwd()
+          cmd = [sys.executable, "scripts/check_rust_bridge_cli_flow.py", "--json"]
           completed = subprocess.run(cmd, cwd=repo_root, check=False)
           raise SystemExit(completed.returncode)
           PY

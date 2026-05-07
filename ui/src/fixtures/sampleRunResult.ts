@@ -1,4 +1,4 @@
-import type { BaseContentEvidenceV1, BaseRunResultV1, LineageSnapshotV1, RuntimeModeSummary } from "../contracts/baseRunResult";
+﻿import type { BaseContentEvidenceV1, BaseRunResultV1, LineageSnapshotV1, RuntimeModeSummary } from "../contracts/baseRunResult";
 
 export const sampleSuccessResult: BaseRunResultV1 = {
   schema_version: 1,
@@ -83,7 +83,7 @@ export const sampleLineageSnapshot: LineageSnapshotV1 = {
 };
 
 export const sampleRuntimeMode: RuntimeModeSummary = {
-  mode: "invoke_ready_not_e2e_verified",
+  mode: "invoke_ready_not_window_e2e",
   tauri_invoke_ready: true,
   tauri_invoke_e2e_verified: false,
   uses_bundled_adapter: true,
@@ -92,3 +92,4 @@ export const sampleRuntimeMode: RuntimeModeSummary = {
   wheelhouse_bundled: false,
   installer_runtime_complete: false,
 };
+

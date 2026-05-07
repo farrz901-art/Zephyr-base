@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 
 import type { BaseContentEvidenceV1, BaseRunResultV1, LineageSnapshotV1, RuntimeModeSummary } from "./contracts/baseRunResult";
 import { sampleErrorEvidence, sampleErrorResult } from "./fixtures/sampleErrorResult";
@@ -29,7 +29,7 @@ export default function App() {
   const [sampleMode, setSampleMode] = useState<"success" | "error">("success");
   const [status, setStatus] = useState("Idle");
   const [statusDetail, setStatusDetail] = useState(
-    "UI shell is showing sample artifacts while Tauri invoke remains invoke-ready and not e2e verified.",
+    "UI shell is showing sample artifacts while Tauri invoke remains invoke-ready and window e2e is not yet verified.",
   );
   const [inputPath, setInputPath] = useState("E:/docs/example.md");
   const [inlineText, setInlineText] = useState("ZEPHYR_BASE_REAL_ADAPTER_MARKER_M3_S4_TEXT");
@@ -127,7 +127,7 @@ export default function App() {
           </button>
         </div>
         <p className="toolbar-note">
-          Tauri invoke is prepared for bundled adapter calls, but S7 does not claim end-to-end verified desktop window integration yet.
+          Tauri invoke is prepared for bundled adapter calls, but S8 still does not claim full desktop window e2e verification.
         </p>
       </section>
       <ProgressPanel status={status} detail={statusDetail} runtimeMode={runtimeMode} />
@@ -147,3 +147,4 @@ export default function App() {
     </main>
   );
 }
+

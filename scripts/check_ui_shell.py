@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -6,6 +6,7 @@ from pathlib import Path
 
 REQUIRED_FILES = [
     Path("docs/UI_ARTIFACT_CONSUMPTION.md"),
+    Path("docs/UI_TAURI_INVOKE_INTEGRATION.md"),
     Path("ui/package.json"),
     Path("ui/index.html"),
     Path("ui/src/main.tsx"),
@@ -28,6 +29,7 @@ REQUIRED_FILES = [
     Path("ui/src/components/LineageStatusCard.tsx"),
     Path("ui/src/components/OutputFolderPlan.tsx"),
     Path("ui/src/styles/tokens.css"),
+    Path("scripts/check_ui_result_lifecycle.py"),
 ]
 FORBIDDEN_COMMERCIAL_TERMS = (
     "license_verify",
@@ -44,6 +46,13 @@ FORBIDDEN_COMMERCIAL_TERMS = (
 FORBIDDEN_NETWORK_TERMS = ("fetch(", "axios", "xmlhttprequest", "websocket")
 SUPPORTED_FORMATS = (".txt", ".text", ".log", ".md", ".markdown")
 UNSUPPORTED_CLAIMS = (".pdf", ".docx", ".png", ".jpg", ".jpeg", ".csv", ".xlsx")
+COMMAND_NAMES = (
+    "run_local_file",
+    "run_local_text",
+    "read_run_result",
+    "open_output_folder_plan",
+    "read_lineage_snapshot",
+)
 
 
 def _read_text(path: Path) -> str:
@@ -74,25 +83,43 @@ def main(argv: list[str] | None = None) -> int:
     sample_success_text = _read_text(root / "ui/src/fixtures/sampleRunResult.ts").lower()
     sample_error_text = _read_text(root / "ui/src/fixtures/sampleErrorResult.ts").lower()
     app_text = _read_text(root / "ui/src/App.tsx")
+    bridge_client_text = _read_text(root / "ui/src/services/baseBridgeClient.ts")
+    commands_rs_text = _read_text(root / "src-tauri/src/commands.rs")
+    main_rs_text = _read_text(root / "src-tauri/src/main.rs")
     format_hits = [fmt for fmt in SUPPORTED_FORMATS if fmt in app_text]
     unsupported_hits = [term for term in UNSUPPORTED_CLAIMS if term in ui_text]
+    command_hits = [name for name in COMMAND_NAMES if name in bridge_client_text]
+    rust_command_hits = [name for name in COMMAND_NAMES if name in commands_rs_text]
+    cli_command_hits = [name.replace("_", "-") for name in COMMAND_NAMES if name.replace("_", "-") in main_rs_text]
+    direct_python_hits = [term for term in ("run_public_core_adapter.py", "subprocess", "python.exe") if term in ui_text]
+    zephyr_dev_root_hits = [term for term in ("zephyr_dev_root", "zephyr-dev-root") if term in ui_text]
+    invoke_mode_declared = "invoke_ready_not_window_e2e" in bridge_client_text and "window e2e" in app_text.lower()
 
     report = {
         "schema_version": 1,
         "report_id": "zephyr.base.s7.ui_shell_check.v1",
         "summary": {
-            "pass": not missing and not forbidden_hits and not network_hits and not unsupported_hits,
+            "pass": not missing and not forbidden_hits and not network_hits and not unsupported_hits and not direct_python_hits and not zephyr_dev_root_hits and len(command_hits) == len(COMMAND_NAMES) and len(rust_command_hits) == len(COMMAND_NAMES) and len(cli_command_hits) == len(COMMAND_NAMES) and invoke_mode_declared,
             "required_files_exist": len(missing) == 0,
             "commercial_terms_blocked": len(forbidden_hits),
             "network_calls_blocked": len(network_hits),
             "supported_formats_limited_to_base_first_slice": len(format_hits) == len(SUPPORTED_FORMATS) and not unsupported_hits,
             "billing_semantics_false_present": "billing_semantics: false" in sample_success_text and "billing_semantics: false" in sample_error_text,
+            "ui_command_names_match_rust": len(command_hits) == len(COMMAND_NAMES) and len(rust_command_hits) == len(COMMAND_NAMES) and len(cli_command_hits) == len(COMMAND_NAMES),
+            "ui_does_not_call_python_directly": len(direct_python_hits) == 0,
+            "ui_does_not_use_zephyr_dev_root": len(zephyr_dev_root_hits) == 0,
+            "invoke_ready_not_window_e2e_declared": invoke_mode_declared,
         },
         "missing_files": missing,
         "forbidden_hits": forbidden_hits,
         "network_hits": network_hits,
         "unsupported_hits": unsupported_hits,
         "supported_formats_detected": format_hits,
+        "direct_python_hits": direct_python_hits,
+        "zephyr_dev_root_hits": zephyr_dev_root_hits,
+        "ui_command_hits": command_hits,
+        "rust_command_hits": rust_command_hits,
+        "cli_command_hits": cli_command_hits,
     }
     out_path = root / ".tmp" / "ui_shell_check.json"
     _write_json(out_path, report)
@@ -103,3 +130,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

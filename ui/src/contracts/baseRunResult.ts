@@ -1,4 +1,4 @@
-export interface BaseErrorV1 {
+﻿export interface BaseErrorV1 {
   schema_version: number;
   error_code: string;
   category: "input" | "processing" | "dependency" | "filesystem" | "unknown";
@@ -76,6 +76,24 @@ export interface BaseRunResultV1 {
   content_evidence_kind?: string;
 }
 
+export interface RunLocalFilePayload {
+  input_path: string;
+  output_dir: string;
+}
+
+export interface RunLocalTextPayload {
+  inline_text: string;
+  output_dir: string;
+}
+
+export interface ReadRunResultPayload {
+  output_dir: string;
+}
+
+export interface OutputFolderPlanPayload {
+  output_dir: string;
+}
+
 export interface LineageSnapshotV1 {
   public_export_lineage: Record<string, unknown>;
   bundle_manifest: Record<string, unknown>;
@@ -86,7 +104,7 @@ export interface LineageSnapshotV1 {
 }
 
 export interface RuntimeModeSummary {
-  mode: "mock_artifact_mode" | "invoke_ready_not_e2e_verified";
+  mode: "mock_artifact_mode" | "invoke_ready_not_window_e2e";
   tauri_invoke_ready: boolean;
   tauri_invoke_e2e_verified: boolean;
   uses_bundled_adapter: boolean;
@@ -94,4 +112,15 @@ export interface RuntimeModeSummary {
   embedded_python_runtime: boolean;
   wheelhouse_bundled: boolean;
   installer_runtime_complete: boolean;
+}
+
+export interface ResultDisplayModel {
+  request_id: string;
+  status: "success" | "failed";
+  normalized_text_preview: string;
+  evidence_kind: string;
+  output_root: string;
+  billing_semantics: boolean;
+  has_error: boolean;
+  error_message: string | null;
 }
