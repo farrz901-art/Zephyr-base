@@ -25,20 +25,9 @@ FORBIDDEN_TAURI_NETWORK_TERMS = (
     'tokio_tungstenite',
     'websocket',
 )
+FORBIDDEN_UI_NETWORK_TERMS = ('fetch(', 'axios', 'xmlhttprequest', 'websocket')
 TEXT_SUFFIXES = {
-    '.md',
-    '.py',
-    '.json',
-    '.rs',
-    '.tsx',
-    '.ts',
-    '.jsx',
-    '.js',
-    '.html',
-    '.toml',
-    '.css',
-    '.yml',
-    '.yaml',
+    '.md', '.py', '.json', '.rs', '.tsx', '.ts', '.jsx', '.js', '.html', '.toml', '.css', '.yml', '.yaml',
 }
 ALLOWED_DOC_PATHS = {
     'README.md',
@@ -46,50 +35,23 @@ ALLOWED_DOC_PATHS = {
     'docs/SOURCE_LINEAGE.md',
     'docs/BRIDGE_RUNTIME_MODES.md',
     'docs/TAURI_COMMAND_BRIDGE.md',
+    'docs/UI_ARTIFACT_CONSUMPTION.md',
     'runtime/public-core-bundle/README.md',
 }
 BLOCKED_PREFIXES = ('src-tauri/', 'ui/', 'public-core-bridge/', 'runtime/public-core-bundle/')
-ALLOWED_NEGATIVE = (
-    'must not',
-    'not ',
-    'no ',
-    'forbidden',
-    'does not include',
-    'cannot',
-)
+ALLOWED_NEGATIVE = ('must not', 'not ', 'no ', 'forbidden', 'does not include', 'cannot')
 ALLOWED_BRIDGE_CONTEXT = (
-    'forbidden_fields',
-    'secret_safe_required',
-    'billing_semantics',
-    'zephyr_dev_public_core_invoked',
-    'public_core_adapter',
-    'fixture_runner_used',
-    'bundled_runtime_used',
-    'public-core-bundle',
-    'installer_runtime_complete',
-    'zephyr_dev_adapter_commit_sha',
-    'bundle_surface_status',
-    'allowed_partition_kinds',
-    'allowed_sources',
-    'allowed_destinations',
+    'forbidden_fields', 'secret_safe_required', 'billing_semantics', 'zephyr_dev_public_core_invoked',
+    'public_core_adapter', 'fixture_runner_used', 'bundled_runtime_used', 'public-core-bundle',
+    'installer_runtime_complete', 'zephyr_dev_adapter_commit_sha', 'bundle_surface_status',
+    'allowed_partition_kinds', 'allowed_sources', 'allowed_destinations',
 )
 ALLOWED_RUNTIME_CONTEXT = (
-    'billing_semantics": false',
-    'billing_semantics: false',
-    'zephyr_dev_public_core_invoked',
-    'public_core_adapter',
-    'fixture_runner_used',
-    '--allow-fixture-fallback',
-    'bundled_runtime_used',
-    'public-core-bundle',
-    'installer_runtime_complete',
-    'zephyr_dev_adapter_commit_sha',
-    'zephyr_dev_working_tree_required',
-    'bundle_surface_status',
-    'allowed_partition_kinds',
-    'allowed_sources',
-    'allowed_destinations',
-    'tauri command bridge',
+    'billing_semantics": false', 'billing_semantics: false', 'zephyr_dev_public_core_invoked',
+    'public_core_adapter', 'fixture_runner_used', '--allow-fixture-fallback', 'bundled_runtime_used',
+    'public-core-bundle', 'installer_runtime_complete', 'zephyr_dev_adapter_commit_sha',
+    'zephyr_dev_working_tree_required', 'bundle_surface_status', 'allowed_partition_kinds',
+    'allowed_sources', 'allowed_destinations', 'tauri command bridge', 'technical usage facts only',
 )
 
 
@@ -113,6 +75,7 @@ def classify(path: Path, text: str) -> list[dict[str, object]]:
                 'scripts/check_bundled_adapter_flow.py',
                 'scripts/check_boundary.py',
                 'scripts/check_tauri_command_bridge.py',
+                'scripts/check_ui_shell.py',
                 'src-tauri/src/errors.rs',
             } and any(marker in lowered for marker in ALLOWED_RUNTIME_CONTEXT)
             blocked = rel.startswith(BLOCKED_PREFIXES) and not (
@@ -125,25 +88,15 @@ def classify(path: Path, text: str) -> list[dict[str, object]]:
                 if blocked
                 else 'review_required'
             )
-            findings.append(
-                {
-                    'path': rel,
-                    'line': line_no,
-                    'term': term,
-                    'classification': classification,
-                }
-            )
+            findings.append({'path': rel, 'line': line_no, 'term': term, 'classification': classification})
         if rel.startswith('src-tauri/src/'):
             for term in FORBIDDEN_TAURI_NETWORK_TERMS:
                 if term in lowered:
-                    findings.append(
-                        {
-                            'path': rel,
-                            'line': line_no,
-                            'term': term,
-                            'classification': 'blocked',
-                        }
-                    )
+                    findings.append({'path': rel, 'line': line_no, 'term': term, 'classification': 'blocked'})
+        if rel.startswith('ui/src/'):
+            for term in FORBIDDEN_UI_NETWORK_TERMS:
+                if term in lowered:
+                    findings.append({'path': rel, 'line': line_no, 'term': term, 'classification': 'blocked'})
     return findings
 
 
@@ -172,12 +125,8 @@ def main(argv: list[str] | None = None) -> int:
         'summary': {
             'pass': len(blocked) == 0,
             'blocked_count': len(blocked),
-            'review_required_count': sum(
-                1 for item in findings if item['classification'] == 'review_required'
-            ),
-            'allowed_boundary_count': sum(
-                1 for item in findings if item['classification'] == 'allowed_boundary'
-            ),
+            'review_required_count': sum(1 for item in findings if item['classification'] == 'review_required'),
+            'allowed_boundary_count': sum(1 for item in findings if item['classification'] == 'allowed_boundary'),
         },
         'findings': findings,
     }

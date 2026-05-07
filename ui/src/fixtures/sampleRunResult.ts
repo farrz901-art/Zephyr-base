@@ -1,0 +1,94 @@
+import type { BaseContentEvidenceV1, BaseRunResultV1, LineageSnapshotV1, RuntimeModeSummary } from "../contracts/baseRunResult";
+
+export const sampleSuccessResult: BaseRunResultV1 = {
+  schema_version: 1,
+  request_id: "ui-sample-success",
+  status: "success",
+  normalized_text_preview: "ZEPHYR_BASE_REAL_ADAPTER_MARKER_M3_S4_TEXT",
+  content_evidence_summary: {
+    elements_count: 1,
+    has_normalized_text: true,
+    evidence_kind: "public_core_content_evidence_v1",
+  },
+  receipt: {
+    schema_version: 1,
+    run_id: "ui-success-run",
+    request_id: "ui-sample-success",
+    status: "success",
+    delivery_outcome: "success",
+    output_root: ".tmp/ui_sample_success",
+    artifacts: ["normalized_text.txt", "content_evidence.json", "receipt.json", "usage_fact.json", "run_result.json"],
+    created_by: "Zephyr bundled public core runner",
+    production_runtime: true,
+    adapter_runtime: "zephyr_base_bundled_public_core_adapter_v1",
+    bundled_runtime_used: true,
+    zephyr_dev_working_tree_required: false,
+    installer_runtime_complete: false,
+    requires_network: false,
+    requires_p45_substrate: false,
+  },
+  usage_fact: {
+    schema_version: 1,
+    fact_kind: "technical_usage_fact",
+    billing_semantics: false,
+    input_bytes: 42,
+    output_files_count: 5,
+    bundled_runtime_used: true,
+    zephyr_dev_working_tree_required: false,
+    installer_runtime_complete: false,
+    requires_network: false,
+    requires_p45_substrate: false,
+  },
+  output_files: ["normalized_text.txt", "content_evidence.json", "receipt.json", "usage_fact.json", "run_result.json"],
+  error: null,
+  adapter_runtime: "zephyr_base_bundled_public_core_adapter_v1",
+  bundled_runtime_used: true,
+  zephyr_dev_working_tree_required: false,
+  installer_runtime_complete: false,
+  requires_network: false,
+  requires_p45_substrate: false,
+  content_evidence_kind: "public_core_content_evidence_v1",
+};
+
+export const sampleSuccessEvidence: BaseContentEvidenceV1 = {
+  schema_version: 1,
+  evidence_kind: "public_core_content_evidence_v1",
+  normalized_text_preview: "ZEPHYR_BASE_REAL_ADAPTER_MARKER_M3_S4_TEXT",
+  source_kind: "local_text",
+  input_bytes: 42,
+  elements_count: 1,
+  token_marker_found: true,
+  bundled_runtime_used: true,
+  zephyr_dev_working_tree_required: false,
+  installer_runtime_complete: false,
+  requires_network: false,
+  requires_p45_substrate: false,
+};
+
+export const sampleLineageSnapshot: LineageSnapshotV1 = {
+  public_export_lineage: {
+    zephyr_dev_source_sha: "780690a21ddc60bb5a01529d3d35358f08903685",
+    p5_1_final_sha: "b94e662a3792fd1a253d457bc1f73b38aefb33fd",
+  },
+  bundle_manifest: {
+    supported_input_extensions: [".txt", ".text", ".log", ".md", ".markdown"],
+    allowed_partition_kinds: ["text", "md"],
+    allowed_sources: ["local_file"],
+    allowed_destinations: ["filesystem"],
+  },
+  uses_current_python_environment: true,
+  embedded_python_runtime: false,
+  wheelhouse_bundled: false,
+  installer_runtime_complete: false,
+};
+
+export const sampleRuntimeMode: RuntimeModeSummary = {
+  mode: "invoke_ready_not_e2e_verified",
+  tauri_invoke_ready: true,
+  tauri_invoke_e2e_verified: false,
+  uses_bundled_adapter: true,
+  uses_current_python_environment: true,
+  embedded_python_runtime: false,
+  wheelhouse_bundled: false,
+  installer_runtime_complete: false,
+};

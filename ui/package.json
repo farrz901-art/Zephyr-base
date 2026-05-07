@@ -1,6 +1,21 @@
 {
-  "name": "zephyr-base-shadow-ui",
+  "name": "zephyr-base-ui-shell",
   "private": true,
-  "placeholder_only": true,
-  "generated_for": "scaffold_planning"
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "check": "node -e \"console.log('ui static shell check only; install intentionally not forced')\""
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.8.0",
+    "vite": "^7.0.0"
+  }
 }
