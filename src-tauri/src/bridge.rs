@@ -11,6 +11,7 @@ use crate::errors::BridgeError;
 pub const ADAPTER_SCRIPT: &str = "public-core-bridge/run_public_core_adapter.py";
 pub const BUNDLE_ROOT: &str = "runtime/public-core-bundle";
 pub const RUN_RESULT_NAME: &str = "run_result.json";
+pub const INTERACTION_PROOF_NAME: &str = "ui_interaction_proof.json";
 const LINEAGE_MANIFEST: &str = "manifests/public_export_lineage.json";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -120,8 +121,9 @@ fn write_request_json(output_dir: &Path, request: &Value) -> Result<PathBuf, Bri
         ))
     })?;
     let request_path = output_dir.join("_tauri_bridge_request.json");
-    let rendered = serde_json::to_string_pretty(request)
-        .map_err(|error| BridgeError::processing(format!("Could not render request JSON: {error}")))?;
+    let rendered = serde_json::to_string_pretty(request).map_err(|error| {
+        BridgeError::processing(format!("Could not render request JSON: {error}"))
+    })?;
     fs::write(&request_path, rendered).map_err(|error| {
         BridgeError::processing(format!(
             "Could not write request payload {}: {error}",
@@ -129,6 +131,15 @@ fn write_request_json(output_dir: &Path, request: &Value) -> Result<PathBuf, Bri
         ))
     })?;
     Ok(request_path)
+}
+
+fn write_json_file(path: &Path, value: &Value) -> Result<(), BridgeError> {
+    let rendered = serde_json::to_string_pretty(value).map_err(|error| {
+        BridgeError::processing(format!("Could not render JSON file {}: {error}", path.display()))
+    })?;
+    fs::write(path, rendered).map_err(|error| {
+        BridgeError::processing(format!("Could not write JSON file {}: {error}", path.display()))
+    })
 }
 
 fn read_json_file(path: &Path) -> Result<Value, BridgeError> {
@@ -196,6 +207,50 @@ pub fn read_run_result(output_dir: &str) -> Result<Value, BridgeError> {
     let app_root = resolve_app_root_from(None)?;
     let output_root = resolve_relative(&app_root, output_dir);
     read_run_result_from_path(&output_root)
+}
+
+pub fn write_interaction_proof(
+    output_dir: &str,
+    proof: &Value,
+    run_result: &Value,
+) -> Result<Value, BridgeError> {
+    if !proof.is_object() {
+        return Err(BridgeError::input("Interaction proof payload must be a JSON object."));
+    }
+    if !run_result.is_object() {
+        return Err(BridgeError::input("Run result payload must be a JSON object."));
+    }
+    let marker = proof
+        .get("marker")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .trim()
+        .to_string();
+    if marker.is_empty() {
+        return Err(BridgeError::input("Interaction proof marker must not be empty."));
+    }
+
+    let app_root = resolve_app_root_from(None)?;
+    let output_root = resolve_relative(&app_root, output_dir);
+    fs::create_dir_all(&output_root).map_err(|error| {
+        BridgeError::processing(format!(
+            "Could not create interaction proof directory {}: {error}",
+            output_root.display()
+        ))
+    })?;
+
+    let run_result_path = output_root.join(RUN_RESULT_NAME);
+    let proof_path = output_root.join(INTERACTION_PROOF_NAME);
+
+    write_json_file(&run_result_path, run_result)?;
+    write_json_file(&proof_path, proof)?;
+
+    Ok(json!({
+        "output_dir": output_root.display().to_string(),
+        "proof_path": proof_path.display().to_string(),
+        "run_result_path": run_result_path.display().to_string(),
+        "tauri_invoke_used": true
+    }))
 }
 
 pub fn open_output_folder_plan(output_dir: &str) -> Value {
@@ -279,5 +334,31 @@ mod tests {
 
         let resolved = resolve_app_root_from(Some(&nested)).expect("resolve root");
         assert_eq!(resolved, root);
+    }
+
+    #[test]
+    fn write_interaction_proof_requires_marker() {
+        let root = unique_temp_dir("proof_root");
+        let nested = root.join("src-tauri/src");
+        fs::create_dir_all(&nested).expect("nested dir");
+        fs::create_dir_all(root.join("public-core-bridge")).expect("adapter dir");
+        fs::create_dir_all(root.join("runtime/public-core-bundle")).expect("bundle dir");
+        fs::create_dir_all(root.join("manifests")).expect("manifest dir");
+        fs::write(root.join(ADAPTER_SCRIPT), "# adapter").expect("adapter file");
+        fs::write(
+            root.join(BUNDLE_ROOT).join("run_bundle_public_core.py"),
+            "# runner",
+        )
+        .expect("bundle runner");
+        fs::write(root.join(LINEAGE_MANIFEST), "{}").expect("lineage file");
+
+        env::set_current_dir(&root).expect("set cwd");
+        let error = write_interaction_proof(
+            ".tmp/proof",
+            &json!({"marker": ""}),
+            &json!({"request_id": "x"}),
+        )
+        .expect_err("marker validation");
+        assert!(error.to_string().contains("rejected the input"));
     }
 }

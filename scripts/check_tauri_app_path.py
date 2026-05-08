@@ -58,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
         and "tauri::Builder::default()" in main_text
         and "tauri::generate_handler!" in main_text
         and "../ui/dist" in tauri_conf_text
+        and "commands::write_interaction_proof" in main_text
     )
 
     output_dir = root / OUTPUT_DIR
@@ -86,6 +87,12 @@ def main(argv: list[str] | None = None) -> int:
         run_stdout = cargo_run_completed.stdout.strip()
         run_stderr = cargo_run_completed.stderr.strip()
 
+    launch_report_path = root / ".tmp" / "tauri_window_launch_attempt.json"
+    launch_report = _load_json(launch_report_path) if launch_report_path.exists() else {}
+    launch_summary = launch_report.get("summary", {}) if isinstance(launch_report, dict) else {}
+    if not isinstance(launch_summary, dict):
+        launch_summary = {}
+
     run_result_path = output_dir / "run_result.json"
     run_result = _load_json(run_result_path) if run_result_path.exists() else {}
     usage_fact = run_result.get("usage_fact", {}) if isinstance(run_result, dict) else {}
@@ -111,15 +118,15 @@ def main(argv: list[str] | None = None) -> int:
 
     report = {
         "schema_version": 1,
-        "report_id": "zephyr.base.s9.tauri_app_path_check.v1",
+        "report_id": "zephyr.base.s10.tauri_app_path_check.v1",
         "summary": {
             "pass": ui_build_pass and cargo_check_pass and tauri_command_registration_pass and rust_cli_lifecycle_pass,
             "ui_build_pass": ui_build_pass,
             "cargo_check_pass": cargo_check_pass,
             "tauri_command_registration_pass": tauri_command_registration_pass,
             "rust_cli_lifecycle_pass": rust_cli_lifecycle_pass,
-            "tauri_window_launch_attempted": False,
-            "tauri_window_click_e2e_verified": False,
+            "tauri_window_launch_attempted": launch_summary.get("tauri_window_launch_attempted", False),
+            "tauri_window_click_e2e_verified": launch_summary.get("tauri_window_click_e2e_verified", False),
         },
         "ui_build": ui_build_report.get("summary", {}),
         "tauri_app_path": {
@@ -127,9 +134,10 @@ def main(argv: list[str] | None = None) -> int:
             "cargo_check_pass": cargo_check_pass,
             "tauri_command_registration_pass": tauri_command_registration_pass,
             "rust_cli_lifecycle_pass": rust_cli_lifecycle_pass,
-            "tauri_window_launch_attempted": False,
-            "tauri_window_click_e2e_verified": False,
-            "launch_reason": "S9 keeps full window click e2e as a later proof step; launch-ready path is validated through build, registration, and CLI lifecycle.",
+            "tauri_window_launch_attempted": launch_summary.get("tauri_window_launch_attempted", False),
+            "tauri_window_click_e2e_verified": launch_summary.get("tauri_window_click_e2e_verified", False),
+            "launch_process_started": launch_summary.get("tauri_window_launch_process_started", False),
+            "launch_reason": launch_report.get("launch", {}).get("reason") if isinstance(launch_report.get("launch"), dict) else None,
         },
         "local_run_lifecycle": {
             "marker_found": marker_found,

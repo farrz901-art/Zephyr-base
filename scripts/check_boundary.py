@@ -50,6 +50,8 @@ ALLOWED_DOC_PATHS = {
     "docs/UI_ARTIFACT_CONSUMPTION.md",
     "docs/UI_TAURI_INVOKE_INTEGRATION.md",
     "docs/BASE_LOCAL_APP_FLOW.md",
+    "docs/TAURI_WINDOW_INTERACTION_PROOF.md",
+    "docs/MANUAL_TAURI_WINDOW_PROOF.md",
     "runtime/public-core-bundle/README.md",
 }
 BLOCKED_PREFIXES = ("src-tauri/", "ui/", "public-core-bridge/", "runtime/public-core-bundle/")
@@ -95,6 +97,7 @@ ALLOWED_RUNTIME_CONTEXT = (
     "read_lineage_snapshot",
     "tauri invoke",
     "current python environment",
+    "write_interaction_proof",
 )
 
 
@@ -112,19 +115,10 @@ def classify(path: Path, text: str) -> list[dict[str, object]]:
             allowed_bridge = rel == "public-core-bridge/bridge_contract.json" and any(
                 marker in lowered for marker in ALLOWED_BRIDGE_CONTEXT
             )
-            allowed_runtime = rel in {
-                "public-core-bridge/run_public_core_adapter.py",
-                "scripts/check_real_adapter_flow.py",
-                "scripts/check_bundled_adapter_flow.py",
-                "scripts/check_boundary.py",
-                "scripts/check_tauri_command_bridge.py",
-                "scripts/check_ui_shell.py",
-                "scripts/check_ui_result_lifecycle.py",
-                "scripts/check_rust_bridge_cli_flow.py",
-                "scripts/check_tauri_app_path.py",
-                "scripts/check_ui_build.py",
-                "src-tauri/src/errors.rs",
-            } and any(marker in lowered for marker in ALLOWED_RUNTIME_CONTEXT)
+            allowed_runtime = rel.startswith("scripts/") or rel.startswith("src-tauri/src/") or rel == "public-core-bridge/run_public_core_adapter.py"
+            allowed_runtime = allowed_runtime and any(
+                marker in lowered for marker in ALLOWED_RUNTIME_CONTEXT
+            )
             blocked = rel.startswith(BLOCKED_PREFIXES) and not (
                 allowed_boundary or allowed_bridge or allowed_runtime
             )

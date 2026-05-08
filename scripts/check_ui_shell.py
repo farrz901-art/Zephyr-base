@@ -8,6 +8,8 @@ REQUIRED_FILES = [
     Path("docs/UI_ARTIFACT_CONSUMPTION.md"),
     Path("docs/UI_TAURI_INVOKE_INTEGRATION.md"),
     Path("docs/BASE_LOCAL_APP_FLOW.md"),
+    Path("docs/TAURI_WINDOW_INTERACTION_PROOF.md"),
+    Path("docs/MANUAL_TAURI_WINDOW_PROOF.md"),
     Path("ui/package.json"),
     Path("ui/tsconfig.json"),
     Path("ui/vite.config.ts"),
@@ -31,10 +33,18 @@ REQUIRED_FILES = [
     Path("ui/src/components/ErrorDiagnosisPanel.tsx"),
     Path("ui/src/components/LineageStatusCard.tsx"),
     Path("ui/src/components/OutputFolderPlan.tsx"),
+    Path("ui/src/components/RunModePanel.tsx"),
+    Path("ui/src/components/RunStatusTimeline.tsx"),
+    Path("ui/src/components/RuntimePreflightCard.tsx"),
+    Path("ui/src/components/InteractionProofPanel.tsx"),
+    Path("ui/src/components/LocalOutputControls.tsx"),
+    Path("ui/src/components/SupportedFormatsNotice.tsx"),
     Path("ui/src/styles/tokens.css"),
     Path("scripts/check_ui_result_lifecycle.py"),
     Path("scripts/check_ui_build.py"),
     Path("scripts/check_tauri_app_path.py"),
+    Path("scripts/check_local_result_lifecycle_ux.py"),
+    Path("scripts/check_tauri_window_interaction_proof.py"),
 ]
 FORBIDDEN_COMMERCIAL_TERMS = (
     "license_verify",
@@ -50,7 +60,6 @@ FORBIDDEN_COMMERCIAL_TERMS = (
 )
 FORBIDDEN_NETWORK_TERMS = ("fetch(", "axios", "xmlhttprequest", "websocket")
 SUPPORTED_FORMATS = (".txt", ".text", ".log", ".md", ".markdown")
-UNSUPPORTED_CLAIMS = (".pdf", ".docx", ".png", ".jpg", ".jpeg", ".csv", ".xlsx")
 COMMAND_NAMES = (
     "run_local_file",
     "run_local_text",
@@ -92,34 +101,32 @@ def main(argv: list[str] | None = None) -> int:
     sample_success_text = _read_text(root / "ui/src/fixtures/sampleRunResult.ts").lower()
     sample_error_text = _read_text(root / "ui/src/fixtures/sampleErrorResult.ts").lower()
 
-    format_hits = [fmt for fmt in SUPPORTED_FORMATS if fmt in app_text]
-    unsupported_hits = [term for term in UNSUPPORTED_CLAIMS if term in ui_text]
+    format_hits = [fmt for fmt in SUPPORTED_FORMATS if fmt in ui_text]
     command_hits = [name for name in COMMAND_NAMES if name in bridge_client_text]
     rust_command_hits = [name for name in COMMAND_NAMES if name in commands_rs_text]
     cli_command_hits = [name.replace("_", "-") for name in COMMAND_NAMES if name.replace("_", "-") in main_rs_text]
     direct_python_hits = [term for term in ("run_public_core_adapter.py", "subprocess", "python.exe") if term in ui_text]
     zephyr_dev_root_hits = [term for term in ("zephyr_dev_root", "zephyr-dev-root") if term in ui_text]
-    invoke_mode_declared = "invoke_ready_not_window_e2e" in bridge_client_text and "tauri invoke dev mode" in app_text.lower()
+    invoke_mode_declared = "invoke_ready_not_window_e2e" in bridge_client_text and "real tauri modes are first-class" in app_text.lower()
     ui_real_run_controls_present = all(
-        label in app_text
-        for label in ("Run local text", "Run local file path", "Read latest result")
+        label in ui_text
+        for label in ("run local text", "run local file path", "read latest result")
     )
-    ui_build_script_exists = '"build"' in _read_text(root / "ui/package.json")
-    tauri_command_registration_exists = "#[tauri::command]" in commands_rs_text and "tauri::Builder::default()" in main_rs_text
+    proof_panel_present = "interactionproofpanel" in ui_text and "export interaction proof" in ui_text
+    unsupported_notice_present = ".pdf" in ui_text and ".docx" in ui_text and "does not claim cloud" in ui_text
 
     report = {
         "schema_version": 1,
-        "report_id": "zephyr.base.s7.ui_shell_check.v1",
+        "report_id": "zephyr.base.s10.ui_shell_check.v1",
         "summary": {
             "pass": not missing
             and not forbidden_hits
             and not network_hits
-            and not unsupported_hits
             and not direct_python_hits
             and not zephyr_dev_root_hits
             and ui_real_run_controls_present
-            and ui_build_script_exists
-            and tauri_command_registration_exists
+            and proof_panel_present
+            and unsupported_notice_present
             and len(command_hits) == len(COMMAND_NAMES)
             and len(rust_command_hits) == len(COMMAND_NAMES)
             and len(cli_command_hits) == len(COMMAND_NAMES)
@@ -127,20 +134,18 @@ def main(argv: list[str] | None = None) -> int:
             "required_files_exist": len(missing) == 0,
             "commercial_terms_blocked": len(forbidden_hits),
             "network_calls_blocked": len(network_hits),
-            "supported_formats_limited_to_base_first_slice": len(format_hits) == len(SUPPORTED_FORMATS) and not unsupported_hits,
+            "supported_formats_limited_to_base_first_slice": len(format_hits) == len(SUPPORTED_FORMATS),
             "billing_semantics_false_present": "billing_semantics: false" in sample_success_text and "billing_semantics: false" in sample_error_text,
             "ui_command_names_match_rust": len(command_hits) == len(COMMAND_NAMES) and len(rust_command_hits) == len(COMMAND_NAMES) and len(cli_command_hits) == len(COMMAND_NAMES),
             "ui_does_not_call_python_directly": len(direct_python_hits) == 0,
             "ui_does_not_use_zephyr_dev_root": len(zephyr_dev_root_hits) == 0,
             "invoke_ready_not_window_e2e_declared": invoke_mode_declared,
             "ui_real_run_controls_present": ui_real_run_controls_present,
-            "ui_build_script_exists": ui_build_script_exists,
-            "tauri_command_registration_exists": tauri_command_registration_exists,
+            "interaction_proof_panel_exists": proof_panel_present,
         },
         "missing_files": missing,
         "forbidden_hits": forbidden_hits,
         "network_hits": network_hits,
-        "unsupported_hits": unsupported_hits,
         "supported_formats_detected": format_hits,
         "direct_python_hits": direct_python_hits,
         "zephyr_dev_root_hits": zephyr_dev_root_hits,

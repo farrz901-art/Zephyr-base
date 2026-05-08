@@ -3,12 +3,15 @@ import { invoke } from "@tauri-apps/api/core";
 import type {
   BaseContentEvidenceV1,
   BaseRunResultV1,
+  InteractionProofV1,
+  InteractionProofWritePayload,
+  InteractionProofWriteResult,
   LineageSnapshotV1,
+  OutputFolderPlanPayload,
+  ReadRunResultPayload,
   ResultDisplayModel,
   RunLocalFilePayload,
   RunLocalTextPayload,
-  ReadRunResultPayload,
-  OutputFolderPlanPayload,
   RuntimeModeSummary,
 } from "../contracts/baseRunResult";
 
@@ -28,6 +31,7 @@ export const TAURI_COMMANDS = {
   read_run_result: "read_run_result",
   open_output_folder_plan: "open_output_folder_plan",
   read_lineage_snapshot: "read_lineage_snapshot",
+  write_interaction_proof: "write_interaction_proof",
 } as const;
 
 export const runtimeMode: RuntimeModeSummary = {
@@ -142,6 +146,21 @@ export const baseBridgeClient = {
     const payload: OutputFolderPlanPayload = { output_dir: outputDir };
     return invokeJson<OutputFolderPlanPayload, OutputFolderPlan>(
       TAURI_COMMANDS.open_output_folder_plan,
+      payload,
+    );
+  },
+  async writeInteractionProof(
+    outputDir: string,
+    proof: InteractionProofV1,
+    runResult: BaseRunResultV1,
+  ): Promise<InteractionProofWriteResult> {
+    const payload: InteractionProofWritePayload = {
+      output_dir: outputDir,
+      proof,
+      run_result: runResult,
+    };
+    return invokeJson<InteractionProofWritePayload, InteractionProofWriteResult>(
+      TAURI_COMMANDS.write_interaction_proof,
       payload,
     );
   },

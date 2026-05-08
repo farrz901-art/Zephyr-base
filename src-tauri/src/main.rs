@@ -98,6 +98,7 @@ fn main() {
             commands::read_run_result,
             commands::open_output_folder_plan,
             commands::read_lineage_snapshot,
+            commands::write_interaction_proof,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Zephyr Base Tauri app path");

@@ -28,3 +28,13 @@ pub fn open_output_folder_plan(output_dir: String) -> Result<Value, String> {
 pub fn read_lineage_snapshot() -> Result<Value, String> {
     lineage::read_lineage_snapshot().map_err(to_user_safe_string)
 }
+
+#[tauri::command]
+pub fn write_interaction_proof(
+    output_dir: String,
+    proof: Value,
+    run_result: Value,
+) -> Result<Value, String> {
+    bridge::write_interaction_proof(&output_dir, &proof, &run_result)
+        .map_err(to_user_safe_string)
+}

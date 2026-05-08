@@ -74,6 +74,7 @@ export interface BaseRunResultV1 {
   requires_network?: boolean;
   requires_p45_substrate?: boolean;
   content_evidence_kind?: string;
+  fixture_runner_used?: boolean;
 }
 
 export interface RunLocalFilePayload {
@@ -92,6 +93,19 @@ export interface ReadRunResultPayload {
 
 export interface OutputFolderPlanPayload {
   output_dir: string;
+}
+
+export interface InteractionProofWritePayload {
+  output_dir: string;
+  proof: InteractionProofV1;
+  run_result: BaseRunResultV1;
+}
+
+export interface InteractionProofWriteResult {
+  output_dir: string;
+  proof_path: string;
+  run_result_path: string;
+  tauri_invoke_used: boolean;
 }
 
 export interface LineageSnapshotV1 {
@@ -123,4 +137,36 @@ export interface ResultDisplayModel {
   billing_semantics: boolean;
   has_error: boolean;
   error_message: string | null;
+}
+
+export type RunLifecycleState =
+  | "idle"
+  | "preparing_request"
+  | "invoking_tauri_command"
+  | "processing_local_runtime"
+  | "reading_result"
+  | "success"
+  | "failed";
+
+export interface InteractionProofV1 {
+  schema_version: number;
+  report_id: string;
+  proof_kind: "manual_window_click" | "automated_window_click";
+  marker: string;
+  window_launched: boolean;
+  user_clicked_run: boolean;
+  ui_mode: "real_tauri_local_text" | "real_tauri_local_file";
+  tauri_invoke_used: boolean;
+  direct_python_call: boolean;
+  network_call: boolean;
+  run_result_path: string;
+  normalized_preview_visible: boolean;
+  evidence_visible: boolean;
+  receipt_visible: boolean;
+  usage_fact_visible: boolean;
+  billing_semantics_displayed_false: boolean;
+  output_folder_plan_visible: boolean;
+  error_panel_available: boolean;
+  screenshot_path: string | null;
+  notes: string[];
 }

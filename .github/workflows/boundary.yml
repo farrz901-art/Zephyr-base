@@ -37,6 +37,12 @@ jobs:
       - name: Base local app flow doc exists
         run: Test-Path docs/BASE_LOCAL_APP_FLOW.md
 
+      - name: Tauri window interaction proof doc exists
+        run: Test-Path docs/TAURI_WINDOW_INTERACTION_PROOF.md
+
+      - name: Manual Tauri proof doc exists
+        run: Test-Path docs/MANUAL_TAURI_WINDOW_PROOF.md
+
       - name: No BOM check
         run: python scripts/check_no_bom.py --json
 
@@ -61,6 +67,9 @@ jobs:
       - name: UI result lifecycle check
         run: python scripts/check_ui_result_lifecycle.py --json
 
+      - name: Local result lifecycle UX check
+        run: python scripts/check_local_result_lifecycle_ux.py --json
+
       - name: UI install
         run: npm --prefix ui ci
 
@@ -70,3 +79,11 @@ jobs:
       - name: Tauri app path check
         continue-on-error: true
         run: python scripts/check_tauri_app_path.py --json
+
+      - name: Tauri window launch attempt
+        continue-on-error: true
+        run: python scripts/attempt_tauri_window_launch.py --json
+
+      - name: Tauri window interaction proof status
+        continue-on-error: true
+        run: python scripts/check_tauri_window_interaction_proof.py --json
