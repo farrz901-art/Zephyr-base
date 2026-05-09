@@ -8,6 +8,7 @@ from pathlib import Path
 DEV_PATH_MARKERS = (
     "e:\\github_projects\\zephyr-base",
     "e:\\github_projects\\zephyr",
+    "\\home\\runner\\work\\zephyr-base",
     "/home/runner/work/zephyr-base",
 )
 
@@ -43,11 +44,9 @@ def _output_path(explicit: bool, proof_root: Path) -> Path:
 
 
 def _content_contains_dev_path(*contents: str) -> bool:
-    lowered_contents = [
-        content.lower().replace("/", "\\")
-        for content in contents
-    ]
-    return any(marker in content for marker in DEV_PATH_MARKERS for content in lowered_contents)
+    lowered_contents = [content.lower().replace("/", "\\") for content in contents]
+    normalized_markers = tuple(marker.replace("/", "\\") for marker in DEV_PATH_MARKERS)
+    return any(marker in content for marker in normalized_markers for content in lowered_contents)
 
 
 def main(argv: list[str] | None = None) -> int:

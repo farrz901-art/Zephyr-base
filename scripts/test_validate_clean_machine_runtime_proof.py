@@ -1,20 +1,10 @@
 from __future__ import annotations
 
-import importlib.util
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
-
-
-def _load_module(root: Path):
-    module_path = root / "scripts/validate_clean_machine_runtime_proof.py"
-    spec = importlib.util.spec_from_file_location("validate_clean_machine_runtime_proof", module_path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> None:
@@ -83,7 +73,7 @@ def _clean_run_result(marker: str) -> dict[str, object]:
     }
 
 
-def _create_proof_root(root: Path, proof_root: Path) -> None:
+def _create_proof_root(proof_root: Path) -> None:
     _write_json(proof_root / "clean_machine_runtime_proof.json", _clean_proof_payload())
     _write_json(
         proof_root / "clean_machine_text/run_result.json",
@@ -95,76 +85,71 @@ def _create_proof_root(root: Path, proof_root: Path) -> None:
     )
 
 
+def _run_validator(root: Path, proof_root: Path) -> tuple[int, dict[str, object]]:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(root / "scripts/validate_clean_machine_runtime_proof.py"),
+            "--proof-root",
+            str(proof_root),
+            "--json",
+        ],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    report = json.loads(
+        (root / ".tmp/clean_machine_runtime_proof_validation.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    return completed.returncode, report
+
+
 def test_external_clean_proof_dir_validation_passes(tmp_path: Path) -> None:
     root = Path(__file__).resolve().parents[1]
     proof_root = tmp_path / "ZephyrBase" / "proof"
-    _create_proof_root(root, proof_root)
-    completed = subprocess.run(
-        [
-            sys.executable,
-            str(root / "scripts/validate_clean_machine_runtime_proof.py"),
-            "--proof-root",
-            str(proof_root),
-            "--json",
-        ],
-        cwd=root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    assert completed.returncode == 0
-    report = json.loads((root / ".tmp/clean_machine_runtime_proof_validation.json").read_text(encoding="utf-8"))
+    _create_proof_root(proof_root)
+    returncode, report = _run_validator(root, proof_root)
+    assert returncode == 0
     assert report["summary"]["pass"] is True
     assert report["dev_path_found"] is False
 
 
-def test_imported_clean_proof_under_repo_tmp_still_passes_when_content_is_clean(tmp_path: Path) -> None:
+def test_imported_clean_proof_under_repo_tmp_still_passes_when_content_is_clean() -> None:
     root = Path(__file__).resolve().parents[1]
     proof_root = root / ".tmp/imported_clean_machine_proof/proof"
     if proof_root.parent.exists():
-        import shutil
         shutil.rmtree(proof_root.parent)
-    _create_proof_root(root, proof_root)
-    completed = subprocess.run(
-        [
-            sys.executable,
-            str(root / "scripts/validate_clean_machine_runtime_proof.py"),
-            "--proof-root",
-            str(proof_root),
-            "--json",
-        ],
-        cwd=root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    assert completed.returncode == 0
-    report = json.loads((root / ".tmp/clean_machine_runtime_proof_validation.json").read_text(encoding="utf-8"))
+    _create_proof_root(proof_root)
+    returncode, report = _run_validator(root, proof_root)
+    assert returncode == 0
     assert report["summary"]["pass"] is True
     assert report["dev_path_found"] is False
 
 
-def test_validation_fails_when_proof_content_contains_dev_path(tmp_path: Path) -> None:
+def test_validation_fails_when_proof_content_contains_windows_dev_path(tmp_path: Path) -> None:
     root = Path(__file__).resolve().parents[1]
     proof_root = tmp_path / "ZephyrBase" / "proof"
-    _create_proof_root(root, proof_root)
+    _create_proof_root(proof_root)
     polluted = _clean_run_result("ZEPHYR_BASE_S13_CLEAN_MACHINE_TEXT_MARKER")
     polluted["bundle_root"] = "E:/Github_Projects/Zephyr-base/runtime/public-core-bundle"
     _write_json(proof_root / "clean_machine_text/run_result.json", polluted)
-    completed = subprocess.run(
-        [
-            sys.executable,
-            str(root / "scripts/validate_clean_machine_runtime_proof.py"),
-            "--proof-root",
-            str(proof_root),
-            "--json",
-        ],
-        cwd=root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    assert completed.returncode != 0
-    report = json.loads((root / ".tmp/clean_machine_runtime_proof_validation.json").read_text(encoding="utf-8"))
+    returncode, report = _run_validator(root, proof_root)
+    assert returncode != 0
+    assert report["summary"]["pass"] is False
+    assert report["dev_path_found"] is True
+
+
+def test_validation_fails_when_proof_content_contains_normalized_home_runner_path(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    proof_root = tmp_path / "ZephyrBase" / "proof"
+    _create_proof_root(proof_root)
+    polluted = _clean_run_result("ZEPHYR_BASE_S13_CLEAN_MACHINE_TEXT_MARKER")
+    polluted["bundle_root"] = "/home/runner/work/Zephyr-base/runtime/public-core-bundle"
+    _write_json(proof_root / "clean_machine_text/run_result.json", polluted)
+    returncode, report = _run_validator(root, proof_root)
+    assert returncode != 0
     assert report["summary"]["pass"] is False
     assert report["dev_path_found"] is True
