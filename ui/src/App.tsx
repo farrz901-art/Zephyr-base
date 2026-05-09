@@ -325,8 +325,10 @@ export default function App() {
           <span>Local-only</span>
           <span>Bundled adapter</span>
           <span>Managed runtime baseline</span>
+          <span>Install layout supported=true</span>
           <span>Current Python environment fallback</span>
           <span>Installer runtime complete=false</span>
+          <span>Clean machine runtime proven=false</span>
         </div>
       </header>
       <Welcome />
@@ -390,7 +392,7 @@ export default function App() {
       <NormalizedTextPreview preview={result.normalized_text_preview} />
       <LineageStatusCard lineage={lineage} runtimeMode={runtimeMode} />
       <footer className="footer-note">
-        Visible shell now surfaces run lifecycle, runtime truth, managed runtime status, supported format limits, and proof export. Full window click e2e still requires an actual proof pack.
+        Visible shell now surfaces run lifecycle, runtime truth, managed runtime status, install-layout readiness, supported format limits, and proof export. Full window click e2e still requires an actual proof pack, and clean-machine runtime remains unproven.
       </footer>
     </main>
   );

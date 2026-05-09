@@ -43,6 +43,22 @@ export function LineageStatusCard({ lineage, runtimeMode }: LineageStatusCardPro
           <dd>{String(lineage.wheelhouse_bundled)}</dd>
         </div>
         <div>
+          <dt>Install layout supported</dt>
+          <dd>{String(lineage.install_layout_supported)}</dd>
+        </div>
+        <div>
+          <dt>Installer built</dt>
+          <dd>{String(lineage.installer_built)}</dd>
+        </div>
+        <div>
+          <dt>Release created</dt>
+          <dd>{String(lineage.release_created)}</dd>
+        </div>
+        <div>
+          <dt>Clean machine runtime proven</dt>
+          <dd>{String(lineage.clean_machine_runtime_proven)}</dd>
+        </div>
+        <div>
           <dt>Installer runtime complete</dt>
           <dd>{String(lineage.installer_runtime_complete)}</dd>
         </div>

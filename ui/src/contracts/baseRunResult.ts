@@ -118,6 +118,10 @@ export interface LineageSnapshotV1 {
   managed_runtime_available: boolean;
   managed_python_runtime_used: boolean;
   selected_python_path: string;
+  install_layout_supported: boolean;
+  installer_built: boolean;
+  release_created: boolean;
+  clean_machine_runtime_proven: boolean;
 }
 
 export interface RuntimeModeSummary {

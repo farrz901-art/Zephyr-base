@@ -46,14 +46,29 @@ jobs:
       - name: Packaged runtime policy doc exists
         run: Test-Path docs/PACKAGED_RUNTIME_BASELINE.md
 
+      - name: Tauri generated artifacts doc exists
+        run: Test-Path docs/TAURI_GENERATED_ARTIFACTS.md
+
+      - name: Install layout policy doc exists
+        run: Test-Path docs/BASE_INSTALL_LAYOUT_POLICY.md
+
+      - name: Clean machine runtime proof plan exists
+        run: Test-Path docs/CLEAN_MACHINE_RUNTIME_PROOF_PLAN.md
+
       - name: No BOM check
         run: python scripts/check_no_bom.py --json
 
       - name: Boundary check
         run: python scripts/check_boundary.py --json
 
+      - name: Generated artifact hygiene check
+        run: python scripts/check_generated_artifact_hygiene.py --json
+
       - name: Runtime packaging baseline check
         run: python scripts/check_runtime_packaging_baseline.py --json
+
+      - name: Install layout baseline check
+        run: python scripts/check_install_layout_baseline.py --json
 
       - name: Bundle surface audit
         run: python scripts/audit_public_core_bundle_surface.py --json
@@ -82,6 +97,12 @@ jobs:
       - name: UI build check
         run: python scripts/check_ui_build.py --json
 
+      - name: Build install layout
+        run: python scripts/build_base_install_layout.py --json
+
+      - name: Audit install layout
+        run: python scripts/audit_base_install_layout.py --json
+
       - name: Python runtime dependency preflight
         continue-on-error: true
         run: python scripts/check_python_runtime_dependencies.py --prefer-managed --json
@@ -97,6 +118,10 @@ jobs:
       - name: Tauri app path check
         continue-on-error: true
         run: python scripts/check_tauri_app_path.py --json
+
+      - name: Install layout runtime smoke
+        continue-on-error: true
+        run: python scripts/check_base_install_layout_runtime_smoke.py --json
 
       - name: Tauri window launch attempt
         continue-on-error: true

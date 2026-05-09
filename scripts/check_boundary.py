@@ -53,6 +53,9 @@ ALLOWED_DOC_PATHS = {
     "docs/TAURI_WINDOW_INTERACTION_PROOF.md",
     "docs/MANUAL_TAURI_WINDOW_PROOF.md",
     "docs/PACKAGED_RUNTIME_BASELINE.md",
+    "docs/TAURI_GENERATED_ARTIFACTS.md",
+    "docs/BASE_INSTALL_LAYOUT_POLICY.md",
+    "docs/CLEAN_MACHINE_RUNTIME_PROOF_PLAN.md",
     "runtime/public-core-bundle/README.md",
     "runtime/python-runtime/README.md",
 }

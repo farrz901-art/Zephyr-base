@@ -11,6 +11,9 @@ REQUIRED_FILES = [
     Path("docs/TAURI_WINDOW_INTERACTION_PROOF.md"),
     Path("docs/MANUAL_TAURI_WINDOW_PROOF.md"),
     Path("docs/PACKAGED_RUNTIME_BASELINE.md"),
+    Path("docs/TAURI_GENERATED_ARTIFACTS.md"),
+    Path("docs/BASE_INSTALL_LAYOUT_POLICY.md"),
+    Path("docs/CLEAN_MACHINE_RUNTIME_PROOF_PLAN.md"),
     Path("ui/package.json"),
     Path("ui/tsconfig.json"),
     Path("ui/vite.config.ts"),
@@ -51,6 +54,11 @@ REQUIRED_FILES = [
     Path("scripts/check_runtime_packaging_baseline.py"),
     Path("scripts/check_managed_runtime_flow.py"),
     Path("scripts/bootstrap_base_runtime.py"),
+    Path("scripts/check_generated_artifact_hygiene.py"),
+    Path("scripts/build_base_install_layout.py"),
+    Path("scripts/audit_base_install_layout.py"),
+    Path("scripts/check_base_install_layout_runtime_smoke.py"),
+    Path("scripts/check_install_layout_baseline.py"),
 ]
 FORBIDDEN_COMMERCIAL_TERMS = (
     "license_verify",
@@ -126,7 +134,15 @@ def main(argv: list[str] | None = None) -> int:
     )
     managed_runtime_status_present = all(
         token in ui_text
-        for token in ("managed runtime available", "managed runtime selected", "selected python")
+        for token in (
+            "managed runtime available",
+            "managed runtime selected",
+            "selected python",
+            "install layout supported",
+            "installer built",
+            "release created",
+            "clean machine runtime proven",
+        )
     )
 
     report = {

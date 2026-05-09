@@ -80,9 +80,13 @@ export const sampleLineageSnapshot: LineageSnapshotV1 = {
   embedded_python_runtime: false,
   wheelhouse_bundled: false,
   installer_runtime_complete: false,
-  managed_runtime_available: false,
+  managed_runtime_available: true,
   managed_python_runtime_used: false,
   selected_python_path: "python",
+  install_layout_supported: true,
+  installer_built: false,
+  release_created: false,
+  clean_machine_runtime_proven: false,
 };
 
 export const sampleRuntimeMode: RuntimeModeSummary = {

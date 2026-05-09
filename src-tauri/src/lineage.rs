@@ -31,6 +31,10 @@ pub fn read_lineage_snapshot() -> Result<Value, BridgeError> {
         "installer_runtime_complete": false,
         "managed_runtime_available": selection.managed_runtime_available,
         "managed_python_runtime_used": selection.managed_python_runtime_used,
-        "selected_python_path": selection.selected_python_path
+        "selected_python_path": selection.selected_python_path,
+        "install_layout_supported": true,
+        "installer_built": false,
+        "release_created": false,
+        "clean_machine_runtime_proven": false
     }))
 }
