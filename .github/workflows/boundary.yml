@@ -55,6 +55,12 @@ jobs:
       - name: Clean machine runtime proof plan exists
         run: Test-Path docs/CLEAN_MACHINE_RUNTIME_PROOF_PLAN.md
 
+      - name: Clean machine runtime proof doc exists
+        run: Test-Path docs/CLEAN_MACHINE_RUNTIME_PROOF.md
+
+      - name: Manual clean machine proof doc exists
+        run: Test-Path docs/MANUAL_CLEAN_MACHINE_RUNTIME_PROOF.md
+
       - name: No BOM check
         run: python scripts/check_no_bom.py --json
 
@@ -103,6 +109,15 @@ jobs:
       - name: Audit install layout
         run: python scripts/audit_base_install_layout.py --json
 
+      - name: Build clean-machine proof pack
+        run: python scripts/build_clean_machine_proof_pack.py --json
+
+      - name: Clean-machine proof pack baseline
+        run: python scripts/check_clean_machine_proof_pack_baseline.py --json
+
+      - name: Clean-machine relocation audit
+        run: python scripts/audit_clean_machine_pack_relocation.py --json
+
       - name: Python runtime dependency preflight
         continue-on-error: true
         run: python scripts/check_python_runtime_dependencies.py --prefer-managed --json
@@ -122,6 +137,10 @@ jobs:
       - name: Install layout runtime smoke
         continue-on-error: true
         run: python scripts/check_base_install_layout_runtime_smoke.py --json
+
+      - name: Clean-machine local simulation
+        continue-on-error: true
+        run: python scripts/check_clean_machine_pack_local_simulation.py --json
 
       - name: Tauri window launch attempt
         continue-on-error: true

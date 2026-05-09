@@ -56,6 +56,8 @@ ALLOWED_DOC_PATHS = {
     "docs/TAURI_GENERATED_ARTIFACTS.md",
     "docs/BASE_INSTALL_LAYOUT_POLICY.md",
     "docs/CLEAN_MACHINE_RUNTIME_PROOF_PLAN.md",
+    "docs/CLEAN_MACHINE_RUNTIME_PROOF.md",
+    "docs/MANUAL_CLEAN_MACHINE_RUNTIME_PROOF.md",
     "runtime/public-core-bundle/README.md",
     "runtime/python-runtime/README.md",
 }
@@ -107,6 +109,7 @@ ALLOWED_RUNTIME_CONTEXT = (
     "managed_venv_supported",
     "wheelhouse_bundled",
     "write_interaction_proof",
+    "clean_machine_runtime_proven",
 )
 
 
