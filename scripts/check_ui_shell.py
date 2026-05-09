@@ -45,6 +45,8 @@ REQUIRED_FILES = [
     Path("scripts/check_tauri_app_path.py"),
     Path("scripts/check_local_result_lifecycle_ux.py"),
     Path("scripts/check_tauri_window_interaction_proof.py"),
+    Path("scripts/check_tauri_invoke_payload_shape.py"),
+    Path("scripts/check_python_runtime_dependencies.py"),
 ]
 FORBIDDEN_COMMERCIAL_TERMS = (
     "license_verify",
@@ -114,6 +116,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     proof_panel_present = "interactionproofpanel" in ui_text and "export interaction proof" in ui_text
     unsupported_notice_present = ".pdf" in ui_text and ".docx" in ui_text and "does not claim cloud" in ui_text
+    camel_case_payloads_present = all(
+        token in bridge_client_text
+        for token in ("inputPath", "outputDir", "inlineText", "runResult")
+    )
 
     report = {
         "schema_version": 1,
@@ -127,6 +133,7 @@ def main(argv: list[str] | None = None) -> int:
             and ui_real_run_controls_present
             and proof_panel_present
             and unsupported_notice_present
+            and camel_case_payloads_present
             and len(command_hits) == len(COMMAND_NAMES)
             and len(rust_command_hits) == len(COMMAND_NAMES)
             and len(cli_command_hits) == len(COMMAND_NAMES)
@@ -142,6 +149,7 @@ def main(argv: list[str] | None = None) -> int:
             "invoke_ready_not_window_e2e_declared": invoke_mode_declared,
             "ui_real_run_controls_present": ui_real_run_controls_present,
             "interaction_proof_panel_exists": proof_panel_present,
+            "camel_case_tauri_payloads_present": camel_case_payloads_present,
         },
         "missing_files": missing,
         "forbidden_hits": forbidden_hits,

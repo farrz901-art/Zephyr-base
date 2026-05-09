@@ -78,27 +78,27 @@ export interface BaseRunResultV1 {
 }
 
 export interface RunLocalFilePayload {
-  input_path: string;
-  output_dir: string;
+  inputPath: string;
+  outputDir: string;
 }
 
 export interface RunLocalTextPayload {
-  inline_text: string;
-  output_dir: string;
+  inlineText: string;
+  outputDir: string;
 }
 
 export interface ReadRunResultPayload {
-  output_dir: string;
+  outputDir: string;
 }
 
 export interface OutputFolderPlanPayload {
-  output_dir: string;
+  outputDir: string;
 }
 
 export interface InteractionProofWritePayload {
-  output_dir: string;
+  outputDir: string;
   proof: InteractionProofV1;
-  run_result: BaseRunResultV1;
+  runResult: BaseRunResultV1;
 }
 
 export interface InteractionProofWriteResult {

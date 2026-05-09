@@ -43,6 +43,11 @@ def main(argv: list[str] | None = None) -> int:
     ui_build_pass = ui_build_completed.returncode == 0
     ui_build_report = _load_json(root / ".tmp/ui_build_check.json") if (root / ".tmp/ui_build_check.json").exists() else {}
 
+    runtime_dep_script = root / "scripts/check_python_runtime_dependencies.py"
+    runtime_dep_completed = _run(["python", str(runtime_dep_script), "--json"], root)
+    runtime_dep_pass = runtime_dep_completed.returncode == 0
+    runtime_dep_report = _load_json(root / ".tmp/python_runtime_dependencies_check.json") if (root / ".tmp/python_runtime_dependencies_check.json").exists() else {}
+
     cargo_check_pass = False
     cargo_check_detail = "cargo not available"
     if cargo_available:
@@ -69,7 +74,7 @@ def main(argv: list[str] | None = None) -> int:
     cargo_run_local_text_pass = False
     run_stdout = ""
     run_stderr = ""
-    if cargo_available and cargo_check_pass:
+    if cargo_available and cargo_check_pass and runtime_dep_pass:
         cargo_run_completed = _run(
             [
                 cargo,
@@ -104,6 +109,7 @@ def main(argv: list[str] | None = None) -> int:
         (
             cargo_available,
             cargo_check_pass,
+            runtime_dep_pass,
             cargo_run_local_text_pass,
             run_result_path.exists(),
             marker_found,
@@ -125,15 +131,18 @@ def main(argv: list[str] | None = None) -> int:
             "cargo_check_pass": cargo_check_pass,
             "tauri_command_registration_pass": tauri_command_registration_pass,
             "rust_cli_lifecycle_pass": rust_cli_lifecycle_pass,
+            "python_runtime_dependencies_pass": runtime_dep_pass,
             "tauri_window_launch_attempted": launch_summary.get("tauri_window_launch_attempted", False),
             "tauri_window_click_e2e_verified": launch_summary.get("tauri_window_click_e2e_verified", False),
         },
         "ui_build": ui_build_report.get("summary", {}),
+        "python_runtime": runtime_dep_report.get("summary", {}),
         "tauri_app_path": {
             "cargo_available": cargo_available,
             "cargo_check_pass": cargo_check_pass,
             "tauri_command_registration_pass": tauri_command_registration_pass,
             "rust_cli_lifecycle_pass": rust_cli_lifecycle_pass,
+            "python_runtime_dependencies_pass": runtime_dep_pass,
             "tauri_window_launch_attempted": launch_summary.get("tauri_window_launch_attempted", False),
             "tauri_window_click_e2e_verified": launch_summary.get("tauri_window_click_e2e_verified", False),
             "launch_process_started": launch_summary.get("tauri_window_launch_process_started", False),
@@ -164,6 +173,7 @@ def main(argv: list[str] | None = None) -> int:
             "check_detail": cargo_check_detail,
             "run_stdout": run_stdout,
             "run_stderr": run_stderr,
+            "runtime_dependency_note": runtime_dep_report.get("recommendation"),
         },
     }
     out_path = root / ".tmp" / "tauri_app_path_check.json"

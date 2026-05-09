@@ -12,6 +12,8 @@ REQUIRED_FILES = [
     Path("ui/src/components/LocalOutputControls.tsx"),
     Path("ui/src/components/SupportedFormatsNotice.tsx"),
     Path("scripts/check_tauri_window_interaction_proof.py"),
+    Path("scripts/check_tauri_invoke_payload_shape.py"),
+    Path("scripts/check_python_runtime_dependencies.py"),
     Path("docs/MANUAL_TAURI_WINDOW_PROOF.md"),
 ]
 REAL_MODE_LABELS = (
@@ -57,6 +59,10 @@ def main(argv: list[str] | None = None) -> int:
         if path.is_file()
     )
     app_text = (root / "ui/src/App.tsx").read_text(encoding="utf-8", errors="ignore").lower()
+    bridge_client_text = (root / "ui/src/services/baseBridgeClient.ts").read_text(
+        encoding="utf-8",
+        errors="ignore",
+    )
     forbidden_hits = [term for term in FORBIDDEN_TERMS if term in ui_text]
     network_hits = [term for term in NETWORK_TERMS if term in ui_text]
 
@@ -70,7 +76,8 @@ def main(argv: list[str] | None = None) -> int:
             and all(label in ui_text for label in REAL_MODE_LABELS)
             and all(term in ui_text for term in LIFECYCLE_TERMS)
             and "export interaction proof" in ui_text
-            and "installer runtime complete=false" in app_text,
+            and "installer runtime complete=false" in app_text
+            and all(token in bridge_client_text for token in ("inputPath", "outputDir", "inlineText", "runResult")),
             "real_run_mode_exists": all(label in ui_text for label in REAL_MODE_LABELS),
             "sample_mode_retained": "sample success" in ui_text and "sample error" in ui_text,
             "run_status_timeline_exists": "runstatustimeline" in ui_text,

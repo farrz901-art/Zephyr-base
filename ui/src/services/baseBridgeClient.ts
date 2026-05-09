@@ -114,8 +114,8 @@ export const baseBridgeClient = {
   hasTauriInvoke,
   async runLocalFile(inputPath: string, outputDir: string): Promise<BaseRunResultV1> {
     const payload: RunLocalFilePayload = {
-      input_path: inputPath,
-      output_dir: outputDir,
+      inputPath,
+      outputDir,
     };
     return invokeJson<RunLocalFilePayload, BaseRunResultV1>(
       TAURI_COMMANDS.run_local_file,
@@ -124,8 +124,8 @@ export const baseBridgeClient = {
   },
   async runLocalText(inlineText: string, outputDir: string): Promise<BaseRunResultV1> {
     const payload: RunLocalTextPayload = {
-      inline_text: inlineText,
-      output_dir: outputDir,
+      inlineText,
+      outputDir,
     };
     return invokeJson<RunLocalTextPayload, BaseRunResultV1>(
       TAURI_COMMANDS.run_local_text,
@@ -133,7 +133,7 @@ export const baseBridgeClient = {
     );
   },
   async readRunResult(outputDir: string): Promise<BaseRunResultV1> {
-    const payload: ReadRunResultPayload = { output_dir: outputDir };
+    const payload: ReadRunResultPayload = { outputDir };
     return invokeJson<ReadRunResultPayload, BaseRunResultV1>(
       TAURI_COMMANDS.read_run_result,
       payload,
@@ -143,7 +143,7 @@ export const baseBridgeClient = {
     return invokeJson<undefined, LineageSnapshotV1>(TAURI_COMMANDS.read_lineage_snapshot);
   },
   async openOutputFolderPlan(outputDir: string): Promise<OutputFolderPlan> {
-    const payload: OutputFolderPlanPayload = { output_dir: outputDir };
+    const payload: OutputFolderPlanPayload = { outputDir };
     return invokeJson<OutputFolderPlanPayload, OutputFolderPlan>(
       TAURI_COMMANDS.open_output_folder_plan,
       payload,
@@ -155,9 +155,9 @@ export const baseBridgeClient = {
     runResult: BaseRunResultV1,
   ): Promise<InteractionProofWriteResult> {
     const payload: InteractionProofWritePayload = {
-      output_dir: outputDir,
+      outputDir,
       proof,
-      run_result: runResult,
+      runResult,
     };
     return invokeJson<InteractionProofWritePayload, InteractionProofWriteResult>(
       TAURI_COMMANDS.write_interaction_proof,

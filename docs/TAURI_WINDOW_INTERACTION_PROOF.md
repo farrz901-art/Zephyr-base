@@ -13,6 +13,12 @@ Manual proof must include a proof pack, not a verbal note:
 - command or launch metadata
 - a marker such as `ZEPHYR_BASE_S10_WINDOW_INTERACTION_MARKER`
 
+Before launching the visible window on Windows, confirm the runtime Python:
+- `$env:ZEPHYR_BASE_PYTHON = (Get-Command python).Source`
+- `python scripts/check_python_runtime_dependencies.py --json`
+
+`ZEPHYR_BASE_PYTHON` is consumed by the Rust bridge. If it is not set, the bridge falls back to `python`, which may not resolve to the Zephyr environment with Base runtime dependencies.
+
 S10 does not claim:
 - installer runtime completeness
 - release packaging
