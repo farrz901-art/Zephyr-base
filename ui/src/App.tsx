@@ -324,7 +324,8 @@ export default function App() {
         <div className="top-band-meta">
           <span>Local-only</span>
           <span>Bundled adapter</span>
-          <span>Current Python environment</span>
+          <span>Managed runtime baseline</span>
+          <span>Current Python environment fallback</span>
           <span>Installer runtime complete=false</span>
         </div>
       </header>
@@ -361,7 +362,7 @@ export default function App() {
       </section>
       <section className="result-grid">
         <RunStatusTimeline currentState={lifecycleState} />
-        <RuntimePreflightCard runtimeMode={runtimeMode} />
+        <RuntimePreflightCard lineage={lineage} runtimeMode={runtimeMode} />
         <SupportedFormatsNotice supportedFormats={[...SUPPORTED_FORMATS]} />
       </section>
       <ProgressPanel status={status} detail={statusDetail} runtimeMode={runtimeMode} />
@@ -389,7 +390,7 @@ export default function App() {
       <NormalizedTextPreview preview={result.normalized_text_preview} />
       <LineageStatusCard lineage={lineage} runtimeMode={runtimeMode} />
       <footer className="footer-note">
-        Visible shell now surfaces run lifecycle, runtime truth, supported format limits, and proof export. Full window click e2e still requires an actual proof pack.
+        Visible shell now surfaces run lifecycle, runtime truth, managed runtime status, supported format limits, and proof export. Full window click e2e still requires an actual proof pack.
       </footer>
     </main>
   );

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "report_id": "zephyr.base.s11.runtime_manifest.v1",
+  "supported_formats": [
+    ".txt",
+    ".text",
+    ".log",
+    ".md",
+    ".markdown"
+  ],
+  "requires_network_at_runtime": false,
+  "requires_p45_substrate": false,
+  "uses_zephyr_dev_working_tree": false,
+  "commercial_logic_allowed": false,
+  "installer_runtime_complete": false,
+  "embedded_python_runtime": false,
+  "wheelhouse_bundled": false,
+  "managed_venv_supported": true,
+  "lock_completeness": "partial",
+  "notes": [
+    "Managed local runtime first slice only.",
+    "No offline installer completeness is claimed in S11."
+  ]
+}

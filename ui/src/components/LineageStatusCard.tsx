@@ -23,8 +23,24 @@ export function LineageStatusCard({ lineage, runtimeMode }: LineageStatusCardPro
           <dd>{publicLineage.p5_1_final_sha ?? "unknown"}</dd>
         </div>
         <div>
+          <dt>Managed runtime available</dt>
+          <dd>{String(lineage.managed_runtime_available)}</dd>
+        </div>
+        <div>
+          <dt>Managed runtime selected</dt>
+          <dd>{String(lineage.managed_python_runtime_used)}</dd>
+        </div>
+        <div>
+          <dt>Selected Python</dt>
+          <dd>{lineage.selected_python_path}</dd>
+        </div>
+        <div>
           <dt>Uses current Python environment</dt>
           <dd>{String(lineage.uses_current_python_environment)}</dd>
+        </div>
+        <div>
+          <dt>Wheelhouse bundled</dt>
+          <dd>{String(lineage.wheelhouse_bundled)}</dd>
         </div>
         <div>
           <dt>Installer runtime complete</dt>

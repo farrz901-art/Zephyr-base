@@ -43,11 +43,17 @@ jobs:
       - name: Manual Tauri proof doc exists
         run: Test-Path docs/MANUAL_TAURI_WINDOW_PROOF.md
 
+      - name: Packaged runtime policy doc exists
+        run: Test-Path docs/PACKAGED_RUNTIME_BASELINE.md
+
       - name: No BOM check
         run: python scripts/check_no_bom.py --json
 
       - name: Boundary check
         run: python scripts/check_boundary.py --json
+
+      - name: Runtime packaging baseline check
+        run: python scripts/check_runtime_packaging_baseline.py --json
 
       - name: Bundle surface audit
         run: python scripts/audit_public_core_bundle_surface.py --json
@@ -75,6 +81,18 @@ jobs:
 
       - name: UI build check
         run: python scripts/check_ui_build.py --json
+
+      - name: Python runtime dependency preflight
+        continue-on-error: true
+        run: python scripts/check_python_runtime_dependencies.py --prefer-managed --json
+
+      - name: Managed runtime bootstrap
+        continue-on-error: true
+        run: python scripts/bootstrap_base_runtime.py --json
+
+      - name: Managed runtime flow
+        continue-on-error: true
+        run: python scripts/check_managed_runtime_flow.py --json
 
       - name: Tauri app path check
         continue-on-error: true

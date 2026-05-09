@@ -44,7 +44,7 @@ def main(argv: list[str] | None = None) -> int:
     ui_build_report = _load_json(root / ".tmp/ui_build_check.json") if (root / ".tmp/ui_build_check.json").exists() else {}
 
     runtime_dep_script = root / "scripts/check_python_runtime_dependencies.py"
-    runtime_dep_completed = _run(["python", str(runtime_dep_script), "--json"], root)
+    runtime_dep_completed = _run(["python", str(runtime_dep_script), "--prefer-managed", "--json"], root)
     runtime_dep_pass = runtime_dep_completed.returncode == 0
     runtime_dep_report = _load_json(root / ".tmp/python_runtime_dependencies_check.json") if (root / ".tmp/python_runtime_dependencies_check.json").exists() else {}
 
@@ -122,6 +122,9 @@ def main(argv: list[str] | None = None) -> int:
         )
     )
 
+    selected_python = runtime_dep_report.get("selected_python")
+    selected_python_is_managed = runtime_dep_report.get("selected_python_is_managed_runtime")
+
     report = {
         "schema_version": 1,
         "report_id": "zephyr.base.s10.tauri_app_path_check.v1",
@@ -143,6 +146,8 @@ def main(argv: list[str] | None = None) -> int:
             "tauri_command_registration_pass": tauri_command_registration_pass,
             "rust_cli_lifecycle_pass": rust_cli_lifecycle_pass,
             "python_runtime_dependencies_pass": runtime_dep_pass,
+            "selected_python": selected_python,
+            "selected_python_is_managed_runtime": selected_python_is_managed,
             "tauri_window_launch_attempted": launch_summary.get("tauri_window_launch_attempted", False),
             "tauri_window_click_e2e_verified": launch_summary.get("tauri_window_click_e2e_verified", False),
             "launch_process_started": launch_summary.get("tauri_window_launch_process_started", False),
@@ -158,7 +163,7 @@ def main(argv: list[str] | None = None) -> int:
         },
         "runtime": {
             "uses_bundled_adapter": True,
-            "uses_current_python_environment": True,
+            "uses_current_python_environment": not bool(selected_python_is_managed),
             "embedded_python_runtime": False,
             "wheelhouse_bundled": False,
             "installer_runtime_complete": False,

@@ -1,10 +1,11 @@
-import type { RuntimeModeSummary } from "../contracts/baseRunResult";
+import type { LineageSnapshotV1, RuntimeModeSummary } from "../contracts/baseRunResult";
 
 interface RuntimePreflightCardProps {
+  lineage: LineageSnapshotV1;
   runtimeMode: RuntimeModeSummary;
 }
 
-export function RuntimePreflightCard({ runtimeMode }: RuntimePreflightCardProps) {
+export function RuntimePreflightCard({ lineage, runtimeMode }: RuntimePreflightCardProps) {
   return (
     <section className="panel-card accent-card">
       <p className="eyebrow">Runtime truth</p>
@@ -19,12 +20,28 @@ export function RuntimePreflightCard({ runtimeMode }: RuntimePreflightCardProps)
           <dd>{String(runtimeMode.uses_bundled_adapter)}</dd>
         </div>
         <div>
+          <dt>Managed runtime available</dt>
+          <dd>{String(lineage.managed_runtime_available)}</dd>
+        </div>
+        <div>
+          <dt>Managed runtime selected</dt>
+          <dd>{String(lineage.managed_python_runtime_used)}</dd>
+        </div>
+        <div>
+          <dt>Selected Python</dt>
+          <dd>{lineage.selected_python_path}</dd>
+        </div>
+        <div>
           <dt>Current Python env</dt>
-          <dd>{String(runtimeMode.uses_current_python_environment)}</dd>
+          <dd>{String(lineage.uses_current_python_environment)}</dd>
+        </div>
+        <div>
+          <dt>Wheelhouse bundled</dt>
+          <dd>{String(lineage.wheelhouse_bundled)}</dd>
         </div>
         <div>
           <dt>Installer complete</dt>
-          <dd>{String(runtimeMode.installer_runtime_complete)}</dd>
+          <dd>{String(lineage.installer_runtime_complete)}</dd>
         </div>
         <div>
           <dt>Tauri invoke ready</dt>

@@ -80,6 +80,9 @@ export const sampleLineageSnapshot: LineageSnapshotV1 = {
   embedded_python_runtime: false,
   wheelhouse_bundled: false,
   installer_runtime_complete: false,
+  managed_runtime_available: false,
+  managed_python_runtime_used: false,
+  selected_python_path: "python",
 };
 
 export const sampleRuntimeMode: RuntimeModeSummary = {
@@ -92,4 +95,3 @@ export const sampleRuntimeMode: RuntimeModeSummary = {
   wheelhouse_bundled: false,
   installer_runtime_complete: false,
 };
-

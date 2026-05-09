@@ -10,6 +10,7 @@ REQUIRED_FILES = [
     Path("docs/BASE_LOCAL_APP_FLOW.md"),
     Path("docs/TAURI_WINDOW_INTERACTION_PROOF.md"),
     Path("docs/MANUAL_TAURI_WINDOW_PROOF.md"),
+    Path("docs/PACKAGED_RUNTIME_BASELINE.md"),
     Path("ui/package.json"),
     Path("ui/tsconfig.json"),
     Path("ui/vite.config.ts"),
@@ -47,6 +48,9 @@ REQUIRED_FILES = [
     Path("scripts/check_tauri_window_interaction_proof.py"),
     Path("scripts/check_tauri_invoke_payload_shape.py"),
     Path("scripts/check_python_runtime_dependencies.py"),
+    Path("scripts/check_runtime_packaging_baseline.py"),
+    Path("scripts/check_managed_runtime_flow.py"),
+    Path("scripts/bootstrap_base_runtime.py"),
 ]
 FORBIDDEN_COMMERCIAL_TERMS = (
     "license_verify",
@@ -120,6 +124,10 @@ def main(argv: list[str] | None = None) -> int:
         token in bridge_client_text
         for token in ("inputPath", "outputDir", "inlineText", "runResult")
     )
+    managed_runtime_status_present = all(
+        token in ui_text
+        for token in ("managed runtime available", "managed runtime selected", "selected python")
+    )
 
     report = {
         "schema_version": 1,
@@ -134,6 +142,7 @@ def main(argv: list[str] | None = None) -> int:
             and proof_panel_present
             and unsupported_notice_present
             and camel_case_payloads_present
+            and managed_runtime_status_present
             and len(command_hits) == len(COMMAND_NAMES)
             and len(rust_command_hits) == len(COMMAND_NAMES)
             and len(cli_command_hits) == len(COMMAND_NAMES)
@@ -150,6 +159,7 @@ def main(argv: list[str] | None = None) -> int:
             "ui_real_run_controls_present": ui_real_run_controls_present,
             "interaction_proof_panel_exists": proof_panel_present,
             "camel_case_tauri_payloads_present": camel_case_payloads_present,
+            "managed_runtime_status_present": managed_runtime_status_present,
         },
         "missing_files": missing,
         "forbidden_hits": forbidden_hits,

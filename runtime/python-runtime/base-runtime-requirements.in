@@ -1,0 +1,7 @@
+# Zephyr Base managed runtime first slice
+# Direct requirements only. Full transitive lock completeness remains a later task.
+pydantic==2.12.5
+unstructured==0.21.5
+numba==0.64.0
+llvmlite==0.46.0
+numpy==2.4.3

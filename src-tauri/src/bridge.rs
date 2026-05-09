@@ -13,11 +13,23 @@ pub const BUNDLE_ROOT: &str = "runtime/public-core-bundle";
 pub const RUN_RESULT_NAME: &str = "run_result.json";
 pub const INTERACTION_PROOF_NAME: &str = "ui_interaction_proof.json";
 const LINEAGE_MANIFEST: &str = "manifests/public_export_lineage.json";
+const MANAGED_PYTHON_POINTER: &str = ".tmp/base_runtime_python_path.txt";
+const DEFAULT_MANAGED_VENV: &str = ".tmp/base_runtime_venv";
+const FALLBACK_MANAGED_VENV: &str = ".tmp/base_runtime_venv_managed";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AdapterInvocation {
     pub program: String,
     pub args: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PythonRuntimeSelection {
+    pub program: String,
+    pub selected_python_path: String,
+    pub managed_runtime_available: bool,
+    pub managed_python_runtime_used: bool,
+    pub uses_current_python_environment: bool,
 }
 
 fn request_id(prefix: &str) -> String {
@@ -62,6 +74,75 @@ pub fn resolve_app_root_from(start: Option<&Path>) -> Result<PathBuf, BridgeErro
     ))
 }
 
+fn managed_python_path_from_root(venv_root: PathBuf) -> PathBuf {
+    if cfg!(windows) {
+        venv_root.join("Scripts").join("python.exe")
+    } else {
+        venv_root.join("bin").join("python")
+    }
+}
+
+fn read_managed_python_pointer(app_root: &Path) -> Option<PathBuf> {
+    let pointer_path = app_root.join(MANAGED_PYTHON_POINTER);
+    let raw = fs::read_to_string(pointer_path).ok()?;
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    Some(PathBuf::from(trimmed))
+}
+
+fn managed_python_candidates(app_root: &Path) -> Vec<PathBuf> {
+    let mut candidates: Vec<PathBuf> = Vec::new();
+    let mut push_unique = |candidate: PathBuf| {
+        if !candidates.iter().any(|existing| existing == &candidate) {
+            candidates.push(candidate);
+        }
+    };
+    if let Some(pointer_python) = read_managed_python_pointer(app_root) {
+        push_unique(pointer_python);
+    }
+    push_unique(managed_python_path_from_root(app_root.join(DEFAULT_MANAGED_VENV)));
+    push_unique(managed_python_path_from_root(app_root.join(FALLBACK_MANAGED_VENV)));
+    candidates
+}
+
+pub fn select_python_runtime(app_root: &Path) -> PythonRuntimeSelection {
+    let managed_candidates = managed_python_candidates(app_root);
+    let managed_runtime_available = managed_candidates.iter().any(|candidate| candidate.exists());
+    if let Ok(env_python) = env::var("ZEPHYR_BASE_PYTHON") {
+        if !env_python.trim().is_empty() {
+            let env_path = PathBuf::from(&env_python);
+            let managed_python_runtime_used =
+                managed_candidates.iter().any(|candidate| candidate == &env_path);
+            return PythonRuntimeSelection {
+                program: env_python.clone(),
+                selected_python_path: env_python,
+                managed_runtime_available,
+                managed_python_runtime_used,
+                uses_current_python_environment: !managed_python_runtime_used,
+            };
+        }
+    }
+    if let Some(managed_python) = managed_candidates.into_iter().find(|candidate| candidate.exists()) {
+        let program = managed_python.display().to_string();
+        return PythonRuntimeSelection {
+            program: program.clone(),
+            selected_python_path: program,
+            managed_runtime_available,
+            managed_python_runtime_used: true,
+            uses_current_python_environment: false,
+        };
+    }
+    PythonRuntimeSelection {
+        program: "python".to_string(),
+        selected_python_path: "python".to_string(),
+        managed_runtime_available: false,
+        managed_python_runtime_used: false,
+        uses_current_python_environment: true,
+    }
+}
+
 pub fn build_local_file_request(input_path: &Path, output_dir: &Path) -> Value {
     json!({
         "schema_version": 1,
@@ -99,7 +180,7 @@ pub fn bundled_adapter_invocation(
     request_path: &Path,
     output_dir: &Path,
 ) -> AdapterInvocation {
-    let program = env::var("ZEPHYR_BASE_PYTHON").unwrap_or_else(|_| "python".to_string());
+    let selection = select_python_runtime(app_root);
     let args = vec![
         app_root.join(ADAPTER_SCRIPT).display().to_string(),
         "--request".to_string(),
@@ -110,7 +191,10 @@ pub fn bundled_adapter_invocation(
         app_root.join(BUNDLE_ROOT).display().to_string(),
         "--json".to_string(),
     ];
-    AdapterInvocation { program, args }
+    AdapterInvocation {
+        program: selection.program,
+        args,
+    }
 }
 
 fn write_request_json(output_dir: &Path, request: &Value) -> Result<PathBuf, BridgeError> {
@@ -121,9 +205,8 @@ fn write_request_json(output_dir: &Path, request: &Value) -> Result<PathBuf, Bri
         ))
     })?;
     let request_path = output_dir.join("_tauri_bridge_request.json");
-    let rendered = serde_json::to_string_pretty(request).map_err(|error| {
-        BridgeError::processing(format!("Could not render request JSON: {error}"))
-    })?;
+    let rendered = serde_json::to_string_pretty(request)
+        .map_err(|error| BridgeError::processing(format!("Could not render request JSON: {error}")))?;
     fs::write(&request_path, rendered).map_err(|error| {
         BridgeError::processing(format!(
             "Could not write request payload {}: {error}",
@@ -301,7 +384,6 @@ mod tests {
         let request_path = root.join(".tmp/request.json");
         let output_dir = root.join(".tmp/out");
         let invocation = bundled_adapter_invocation(root, &request_path, &output_dir);
-        assert_eq!(invocation.program, "python");
         assert!(invocation
             .args
             .iter()

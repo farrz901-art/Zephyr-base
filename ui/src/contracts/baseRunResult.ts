@@ -115,6 +115,9 @@ export interface LineageSnapshotV1 {
   embedded_python_runtime: boolean;
   wheelhouse_bundled: boolean;
   installer_runtime_complete: boolean;
+  managed_runtime_available: boolean;
+  managed_python_runtime_used: boolean;
+  selected_python_path: string;
 }
 
 export interface RuntimeModeSummary {

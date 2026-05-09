@@ -1,0 +1,8 @@
+# Zephyr Base managed runtime first slice
+# lock_completeness: partial
+# This file intentionally pins the direct runtime dependencies required by the bundled adapter path.
+pydantic==2.12.5
+unstructured==0.21.5
+numba==0.64.0
+llvmlite==0.46.0
+numpy==2.4.3

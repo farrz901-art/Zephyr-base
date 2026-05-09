@@ -52,7 +52,9 @@ ALLOWED_DOC_PATHS = {
     "docs/BASE_LOCAL_APP_FLOW.md",
     "docs/TAURI_WINDOW_INTERACTION_PROOF.md",
     "docs/MANUAL_TAURI_WINDOW_PROOF.md",
+    "docs/PACKAGED_RUNTIME_BASELINE.md",
     "runtime/public-core-bundle/README.md",
+    "runtime/python-runtime/README.md",
 }
 BLOCKED_PREFIXES = ("src-tauri/", "ui/", "public-core-bridge/", "runtime/public-core-bundle/")
 ALLOWED_NEGATIVE = ("must not", "not ", "no ", "forbidden", "does not include", "cannot")
@@ -97,6 +99,10 @@ ALLOWED_RUNTIME_CONTEXT = (
     "read_lineage_snapshot",
     "tauri invoke",
     "current python environment",
+    "selected python",
+    "managed runtime",
+    "managed_venv_supported",
+    "wheelhouse_bundled",
     "write_interaction_proof",
 )
 
