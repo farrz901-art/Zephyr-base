@@ -21,6 +21,10 @@ def _read_json(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _read_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8", errors="ignore")
+
+
 def _resolve_proof_root(raw: Path | None) -> Path:
     if raw is None:
         return Path(__file__).resolve().parents[1] / "proof"
@@ -36,6 +40,14 @@ def _output_path(explicit: bool, proof_root: Path) -> Path:
     if not explicit:
         return proof_root / "clean_machine_runtime_proof_validation.json"
     return Path.cwd().resolve() / ".tmp/clean_machine_runtime_proof_validation.json"
+
+
+def _content_contains_dev_path(*contents: str) -> bool:
+    lowered_contents = [
+        content.lower().replace("/", "\\")
+        for content in contents
+    ]
+    return any(marker in content for marker in DEV_PATH_MARKERS for content in lowered_contents)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -56,8 +68,11 @@ def main(argv: list[str] | None = None) -> int:
     if not isinstance(usage_fact, dict):
         usage_fact = {}
 
-    lowered_path = str(proof_root).lower()
-    dev_path_found = any(marker in lowered_path for marker in DEV_PATH_MARKERS)
+    dev_path_found = _content_contains_dev_path(
+        _read_text(proof_path) if proof_path.exists() else "",
+        _read_text(text_run_result_path) if text_run_result_path.exists() else "",
+        _read_text(file_run_result_path) if file_run_result_path.exists() else "",
+    )
     text_flow = proof.get("text_flow", {}) if isinstance(proof.get("text_flow"), dict) else {}
     file_flow = proof.get("file_flow", {}) if isinstance(proof.get("file_flow"), dict) else {}
     scope = proof.get("scope", {}) if isinstance(proof.get("scope"), dict) else {}
