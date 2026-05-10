@@ -46,6 +46,9 @@ jobs:
       - name: Packaged runtime policy doc exists
         run: Test-Path docs/PACKAGED_RUNTIME_BASELINE.md
 
+      - name: Offline runtime wheelhouse proof doc exists
+        run: Test-Path docs/OFFLINE_RUNTIME_WHEELHOUSE_PROOF.md
+
       - name: Tauri generated artifacts doc exists
         run: Test-Path docs/TAURI_GENERATED_ARTIFACTS.md
 
@@ -61,6 +64,9 @@ jobs:
       - name: Manual clean machine proof doc exists
         run: Test-Path docs/MANUAL_CLEAN_MACHINE_RUNTIME_PROOF.md
 
+      - name: Wheelhouse policy doc exists
+        run: Test-Path runtime/python-runtime/WHEELHOUSE_POLICY.md
+
       - name: No BOM check
         run: python scripts/check_no_bom.py --json
 
@@ -75,6 +81,12 @@ jobs:
 
       - name: Install layout baseline check
         run: python scripts/check_install_layout_baseline.py --json
+
+      - name: Clean-machine proof pack baseline
+        run: python scripts/check_clean_machine_proof_pack_baseline.py --json
+
+      - name: Offline runtime baseline check
+        run: python scripts/check_offline_runtime_baseline.py --json
 
       - name: Bundle surface audit
         run: python scripts/audit_public_core_bundle_surface.py --json
@@ -112,11 +124,19 @@ jobs:
       - name: Build clean-machine proof pack
         run: python scripts/build_clean_machine_proof_pack.py --json
 
-      - name: Clean-machine proof pack baseline
-        run: python scripts/check_clean_machine_proof_pack_baseline.py --json
-
       - name: Clean-machine relocation audit
         run: python scripts/audit_clean_machine_pack_relocation.py --json
+
+      - name: Build offline wheelhouse
+        continue-on-error: true
+        run: python scripts/build_base_runtime_wheelhouse.py --json
+
+      - name: Offline network guard
+        run: python scripts/check_offline_install_network_guard.py --json
+
+      - name: Offline proof pack build
+        continue-on-error: true
+        run: python scripts/build_clean_machine_offline_proof_pack.py --json
 
       - name: Python runtime dependency preflight
         continue-on-error: true
@@ -141,6 +161,14 @@ jobs:
       - name: Clean-machine local simulation
         continue-on-error: true
         run: python scripts/check_clean_machine_pack_local_simulation.py --json
+
+      - name: Offline wheelhouse install
+        continue-on-error: true
+        run: python scripts/check_wheelhouse_runtime_install.py --json
+
+      - name: Offline proof local simulation
+        continue-on-error: true
+        run: python scripts/check_offline_proof_pack_local_simulation.py --json
 
       - name: Tauri window launch attempt
         continue-on-error: true

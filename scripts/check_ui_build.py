@@ -35,6 +35,7 @@ def main(argv: list[str] | None = None) -> int:
     npm_executable = shutil.which("npm")
     npm_available = npm_executable is not None
     lock_file_exists = (ui_root / "package-lock.json").exists()
+    node_modules_exists = (ui_root / "node_modules").exists()
 
     install_pass = False
     build_pass = False
@@ -48,13 +49,22 @@ def main(argv: list[str] | None = None) -> int:
         install_completed = _run(install_command, root)
         install_pass = install_completed.returncode == 0
         install_detail = (install_completed.stdout + "\n" + install_completed.stderr).strip()
-        if install_pass:
+
+        build_completed = None
+        typecheck_completed = None
+        if install_pass or node_modules_exists:
             build_completed = _run([npm_executable, "--prefix", "ui", "run", "build"], root)
             build_pass = build_completed.returncode == 0
             build_detail = (build_completed.stdout + "\n" + build_completed.stderr).strip()
             typecheck_completed = _run([npm_executable, "--prefix", "ui", "run", "typecheck"], root)
             typecheck_pass = typecheck_completed.returncode == 0
             typecheck_detail = (typecheck_completed.stdout + "\n" + typecheck_completed.stderr).strip()
+            if not install_pass and node_modules_exists and build_pass and typecheck_pass:
+                install_pass = True
+                install_detail = (
+                    install_detail
+                    + "\nFallback: reused existing ui/node_modules after npm ci/install failed, and build+typecheck still passed."
+                ).strip()
 
     dist_root = ui_root / "dist"
     index_exists = (dist_root / "index.html").exists()

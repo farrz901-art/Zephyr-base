@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "required": [
+    "schema_version",
+    "report_id",
+    "requirements_file",
+    "wheelhouse_path",
+    "python_tag",
+    "platform",
+    "wheels_count",
+    "missing_requirements",
+    "download_pass",
+    "offline_install_proven",
+    "wheelhouse_bundled",
+    "committed_to_repo"
+  ],
+  "properties": {
+    "schema_version": { "type": "integer" },
+    "report_id": { "type": "string" },
+    "requirements_file": { "type": "string" },
+    "wheelhouse_path": { "type": "string" },
+    "python_tag": { "type": "string" },
+    "platform": { "type": "string" },
+    "wheels_count": { "type": "integer", "minimum": 0 },
+    "missing_requirements": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "source_dist_only": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "incompatible_platform": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "download_pass": { "type": "boolean" },
+    "offline_install_proven": { "type": "boolean" },
+    "wheelhouse_bundled": { "type": "boolean" },
+    "committed_to_repo": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

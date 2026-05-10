@@ -58,8 +58,10 @@ ALLOWED_DOC_PATHS = {
     "docs/CLEAN_MACHINE_RUNTIME_PROOF_PLAN.md",
     "docs/CLEAN_MACHINE_RUNTIME_PROOF.md",
     "docs/MANUAL_CLEAN_MACHINE_RUNTIME_PROOF.md",
+    "docs/OFFLINE_RUNTIME_WHEELHOUSE_PROOF.md",
     "runtime/public-core-bundle/README.md",
     "runtime/python-runtime/README.md",
+    "runtime/python-runtime/WHEELHOUSE_POLICY.md",
 }
 BLOCKED_PREFIXES = ("src-tauri/", "ui/", "public-core-bridge/", "runtime/public-core-bundle/")
 ALLOWED_NEGATIVE = ("must not", "not ", "no ", "forbidden", "does not include", "cannot")
@@ -110,6 +112,9 @@ ALLOWED_RUNTIME_CONTEXT = (
     "wheelhouse_bundled",
     "write_interaction_proof",
     "clean_machine_runtime_proven",
+    "offline_runtime_install_proven",
+    "--no-index",
+    "--find-links",
 )
 
 

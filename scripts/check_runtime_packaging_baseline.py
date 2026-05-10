@@ -5,17 +5,22 @@ import json
 import subprocess
 from pathlib import Path
 
+
 REQUIRED_PATHS = [
     Path("docs/PACKAGED_RUNTIME_BASELINE.md"),
+    Path("docs/OFFLINE_RUNTIME_WHEELHOUSE_PROOF.md"),
     Path("runtime/python-runtime/base-runtime-requirements.in"),
     Path("runtime/python-runtime/base-runtime-requirements.txt"),
     Path("runtime/python-runtime/README.md"),
     Path("runtime/python-runtime/runtime_manifest.json"),
+    Path("runtime/python-runtime/WHEELHOUSE_POLICY.md"),
+    Path("runtime/python-runtime/wheelhouse_manifest.schema.json"),
     Path("scripts/bootstrap_base_runtime.py"),
     Path("scripts/check_python_runtime_dependencies.py"),
     Path("scripts/check_managed_runtime_flow.py"),
     Path("scripts/build_base_runtime_wheelhouse.py"),
     Path("scripts/check_wheelhouse_runtime_install.py"),
+    Path("scripts/check_offline_install_network_guard.py"),
 ]
 TRACKED_FORBIDDEN_PREFIXES = (
     ".tmp/base_runtime_venv/",
@@ -52,7 +57,7 @@ def main(argv: list[str] | None = None) -> int:
     tracked = _tracked_files(root)
     tracked_forbidden = [path for path in tracked if path.startswith(TRACKED_FORBIDDEN_PREFIXES)]
     venv_committed = any(path.startswith((".tmp/base_runtime_venv/", ".tmp/base_runtime_venv_from_wheelhouse/", ".venv/")) for path in tracked_forbidden)
-    wheelhouse_committed = any(path.startswith(".tmp/base_runtime_wheelhouse/") for path in tracked_forbidden)
+    wheelhouse_committed = any(path.startswith(".tmp/base_runtime_wheelhouse/") or path.endswith(".whl") for path in tracked)
 
     manifest_ok = (
         manifest.get("installer_runtime_complete") is False

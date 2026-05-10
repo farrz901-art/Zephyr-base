@@ -12,6 +12,8 @@ REQUIRED_FILES = [
     Path("docs/CLEAN_MACHINE_RUNTIME_PROOF_PLAN.md"),
     Path("docs/CLEAN_MACHINE_RUNTIME_PROOF.md"),
     Path("docs/MANUAL_CLEAN_MACHINE_RUNTIME_PROOF.md"),
+    Path("docs/OFFLINE_RUNTIME_WHEELHOUSE_PROOF.md"),
+    Path("runtime/python-runtime/WHEELHOUSE_POLICY.md"),
     Path("scripts/check_generated_artifact_hygiene.py"),
     Path("scripts/build_base_install_layout.py"),
     Path("scripts/audit_base_install_layout.py"),
@@ -23,6 +25,9 @@ REQUIRED_FILES = [
     Path("scripts/check_clean_machine_pack_local_simulation.py"),
     Path("scripts/import_clean_machine_proof.py"),
     Path("scripts/check_clean_machine_proof_pack_baseline.py"),
+    Path("scripts/build_clean_machine_offline_proof_pack.py"),
+    Path("scripts/check_offline_proof_pack_local_simulation.py"),
+    Path("scripts/import_offline_runtime_proof.py"),
 ]
 
 
@@ -58,6 +63,7 @@ def main(argv: list[str] | None = None) -> int:
             ".tmp/base_runtime_venv/",
             ".tmp/base_runtime_venv_managed/",
             ".tmp/base_runtime_wheelhouse/",
+            ".tmp/base_runtime_venv_from_wheelhouse/",
             ".venv/",
         )
         for path in tracked
@@ -78,6 +84,8 @@ def main(argv: list[str] | None = None) -> int:
             "runtime_smoke_script_exists": (root / "scripts/check_base_install_layout_runtime_smoke.py").exists(),
             "clean_machine_pack_builder_exists": (root / "scripts/build_clean_machine_proof_pack.py").exists(),
             "clean_machine_validator_exists": (root / "scripts/validate_clean_machine_runtime_proof.py").exists(),
+            "offline_pack_builder_exists": (root / "scripts/build_clean_machine_offline_proof_pack.py").exists(),
+            "offline_pack_simulation_exists": (root / "scripts/check_offline_proof_pack_local_simulation.py").exists(),
             "src_tauri_gen_tracked": src_tauri_gen_tracked,
             "venv_or_wheelhouse_tracked": venv_or_wheelhouse_tracked,
         },
