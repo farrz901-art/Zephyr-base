@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Zephyr Base S15 Windows Installer Manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "report_id",
+    "base_repo_sha",
+    "package_kind",
+    "package_path",
+    "install_root",
+    "ui_dist_present",
+    "tauri_app_present",
+    "public_core_bundle_present",
+    "runtime_manifest_present",
+    "wheelhouse_in_package",
+    "wheelhouse_committed_to_repo",
+    "embedded_python_runtime",
+    "installer_built",
+    "signed_installer",
+    "release_created",
+    "install_smoke_pass",
+    "commercial_logic_allowed"
+  ],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "report_id": { "type": "string" },
+    "base_repo_sha": { "type": "string" },
+    "source_sha": { "type": "string" },
+    "package_kind": {
+      "type": "string",
+      "enum": ["portable_zip", "unsigned_installer_skeleton"]
+    },
+    "package_path": { "type": "string" },
+    "install_root": { "type": "string" },
+    "ui_dist_present": { "type": "boolean" },
+    "tauri_app_present": { "type": "boolean" },
+    "public_core_bundle_present": { "type": "boolean" },
+    "runtime_manifest_present": { "type": "boolean" },
+    "wheelhouse_in_package": { "type": "boolean" },
+    "wheelhouse_committed_to_repo": { "type": "boolean" },
+    "embedded_python_runtime": { "type": "boolean" },
+    "installer_built": { "type": "boolean" },
+    "signed_installer": { "type": "boolean" },
+    "release_created": { "type": "boolean" },
+    "install_smoke_pass": { "type": "boolean" },
+    "commercial_logic_allowed": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

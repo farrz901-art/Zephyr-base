@@ -67,6 +67,12 @@ jobs:
       - name: Wheelhouse policy doc exists
         run: Test-Path runtime/python-runtime/WHEELHOUSE_POLICY.md
 
+      - name: Windows installer packaging policy exists
+        run: Test-Path docs/WINDOWS_INSTALLER_PACKAGING_POLICY.md
+
+      - name: Windows packaging readme exists
+        run: Test-Path packaging/windows/README.md
+
       - name: No BOM check
         run: python scripts/check_no_bom.py --json
 
@@ -87,6 +93,9 @@ jobs:
 
       - name: Offline runtime baseline check
         run: python scripts/check_offline_runtime_baseline.py --json
+
+      - name: Windows installer baseline check
+        run: python scripts/check_windows_installer_baseline.py --json
 
       - name: Bundle surface audit
         run: python scripts/audit_public_core_bundle_surface.py --json
@@ -115,6 +124,10 @@ jobs:
       - name: UI build check
         run: python scripts/check_ui_build.py --json
 
+      - name: Build Tauri app baseline
+        continue-on-error: true
+        run: python scripts/build_tauri_app_baseline.py --json
+
       - name: Build install layout
         run: python scripts/build_base_install_layout.py --json
 
@@ -137,6 +150,10 @@ jobs:
       - name: Offline proof pack build
         continue-on-error: true
         run: python scripts/build_clean_machine_offline_proof_pack.py --json
+
+      - name: Wheel-only readiness
+        continue-on-error: true
+        run: python scripts/check_wheelhouse_wheel_only_readiness.py --json
 
       - name: Python runtime dependency preflight
         continue-on-error: true
@@ -169,6 +186,18 @@ jobs:
       - name: Offline proof local simulation
         continue-on-error: true
         run: python scripts/check_offline_proof_pack_local_simulation.py --json
+
+      - name: Build unsigned Windows installer package
+        continue-on-error: true
+        run: python scripts/build_windows_installer_package.py --json
+
+      - name: Audit unsigned Windows installer package
+        continue-on-error: true
+        run: python scripts/audit_windows_installer_package.py --json
+
+      - name: Run unsigned Windows install smoke
+        continue-on-error: true
+        run: python scripts/run_windows_install_smoke.py --package .tmp/windows_installer_package/ZephyrBase-windows-unsigned.zip --json
 
       - name: Tauri window launch attempt
         continue-on-error: true
