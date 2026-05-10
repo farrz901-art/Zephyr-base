@@ -1,5 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { AdvancedDiagnostics } from "./components/diagnostics/AdvancedDiagnostics";
+import { InputCard } from "./components/input/InputCard";
+import { AppShell } from "./components/layout/AppShell";
+import { UserResultCard } from "./components/results/UserResultCard";
+import { RunCard } from "./components/run/RunCard";
 import type {
   BaseContentEvidenceV1,
   BaseRunResultV1,
@@ -8,13 +13,17 @@ import type {
   RunLifecycleState,
   RuntimeModeSummary,
 } from "./contracts/baseRunResult";
-import { sampleErrorEvidence, sampleErrorResult } from "./fixtures/sampleErrorResult";
+import {
+  sampleErrorEvidence,
+  sampleErrorResult,
+} from "./fixtures/sampleErrorResult";
 import {
   sampleLineageSnapshot,
   sampleRuntimeMode,
   sampleSuccessEvidence,
   sampleSuccessResult,
 } from "./fixtures/sampleRunResult";
+import { LanguageProvider, useLanguage } from "./i18n/useLanguage";
 import {
   baseBridgeClient,
   buildEvidenceFromRunResult,
@@ -22,42 +31,38 @@ import {
   type OutputFolderPlan,
 } from "./services/baseBridgeClient";
 import { mockArtifactClient } from "./services/mockArtifactClient";
-import { Welcome } from "./components/Welcome";
-import { FileDropZone } from "./components/FileDropZone";
-import { TextInputPanel } from "./components/TextInputPanel";
-import { ProgressPanel } from "./components/ProgressPanel";
-import { ResultSummary } from "./components/ResultSummary";
-import { NormalizedTextPreview } from "./components/NormalizedTextPreview";
-import { EvidenceCard } from "./components/EvidenceCard";
-import { ReceiptCard } from "./components/ReceiptCard";
-import { UsageFactCard } from "./components/UsageFactCard";
-import { ErrorDiagnosisPanel } from "./components/ErrorDiagnosisPanel";
-import { LineageStatusCard } from "./components/LineageStatusCard";
-import { OutputFolderPlan as OutputFolderPlanCard } from "./components/OutputFolderPlan";
-import { RunModePanel, type RunMode } from "./components/RunModePanel";
-import { RunStatusTimeline } from "./components/RunStatusTimeline";
-import { RuntimePreflightCard } from "./components/RuntimePreflightCard";
-import { InteractionProofPanel } from "./components/InteractionProofPanel";
-import { LocalOutputControls } from "./components/LocalOutputControls";
-import { SupportedFormatsNotice } from "./components/SupportedFormatsNotice";
 
 const SUPPORTED_FORMATS = [".txt", ".text", ".log", ".md", ".markdown"] as const;
 const FILE_OUTPUT_DIR = ".tmp/ui_shell_file";
 const TEXT_OUTPUT_DIR = ".tmp/ui_shell_text";
 const PROOF_OUTPUT_DIR = ".tmp/s10_tauri_window_interaction";
-const DEFAULT_MARKER = "ZEPHYR_BASE_S10_WINDOW_INTERACTION_MARKER";
+const DEFAULT_MARKER = "ZEPHYR_BASE_S16_UX_TEXT_MARKER";
+
+type DisplayMode =
+  | "real_tauri_local_text"
+  | "real_tauri_local_file"
+  | "sample_success"
+  | "sample_error";
+
+type StatusContext =
+  | "ready"
+  | "sample_success"
+  | "sample_error"
+  | "real_success"
+  | "real_failed"
+  | "read_failed";
 
 function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-export default function App() {
-  const [runMode, setRunMode] = useState<RunMode>("real_tauri_local_text");
-  const [status, setStatus] = useState("Idle");
-  const [statusDetail, setStatusDetail] = useState(
-    "Visible Tauri path is ready for a real local run. Window click proof still requires an exported proof pack.",
-  );
+function BaseApp() {
+  const { messages: m } = useLanguage();
+  const [inputMode, setInputMode] = useState<"text" | "file">("text");
+  const [displayMode, setDisplayMode] = useState<DisplayMode>("real_tauri_local_text");
   const [lifecycleState, setLifecycleState] = useState<RunLifecycleState>("idle");
+  const [statusContext, setStatusContext] = useState<StatusContext>("ready");
+  const [statusErrorDetail, setStatusErrorDetail] = useState<string | null>(null);
   const [inputPath, setInputPath] = useState("tests/fixtures/real_adapter_sample_input.txt");
   const [inlineText, setInlineText] = useState(DEFAULT_MARKER);
   const [result, setResult] = useState<BaseRunResultV1>(sampleSuccessResult);
@@ -76,10 +81,8 @@ export default function App() {
   const [lastOutputDir, setLastOutputDir] = useState(TEXT_OUTPUT_DIR);
   const [lastRealMode, setLastRealMode] = useState<"real_tauri_local_text" | "real_tauri_local_file" | null>(null);
   const [proofStatus, setProofStatus] = useState<"not_exported" | "exported" | "failed">("not_exported");
-  const [proofNote, setProofNote] = useState(
-    "Run a real Tauri mode and export the proof pack from the visible window.",
-  );
   const [proofPath, setProofPath] = useState<string | null>(null);
+  const [proofErrorDetail, setProofErrorDetail] = useState<string | null>(null);
 
   useEffect(() => {
     const loadInitialState = async () => {
@@ -100,10 +103,69 @@ export default function App() {
     void loadInitialState();
   }, []);
 
+  const isRunning = useMemo(
+    () =>
+      lifecycleState === "preparing_request" ||
+      lifecycleState === "invoking_tauri_command" ||
+      lifecycleState === "processing_local_runtime" ||
+      lifecycleState === "reading_result",
+    [lifecycleState],
+  );
+
+  const statusView = useMemo(() => {
+    if (lifecycleState === "preparing_request") {
+      return { status: m.status.preparing, detail: m.status.preparingDetail };
+    }
+    if (lifecycleState === "invoking_tauri_command") {
+      return { status: m.status.running, detail: m.status.invokingDetail };
+    }
+    if (lifecycleState === "processing_local_runtime") {
+      return { status: m.status.running, detail: m.status.processingDetail };
+    }
+    if (lifecycleState === "reading_result") {
+      return { status: m.status.running, detail: m.status.readingDetail };
+    }
+    if (statusContext === "sample_success") {
+      return { status: m.status.sampleSuccess, detail: m.status.sampleSuccessDetail };
+    }
+    if (statusContext === "sample_error") {
+      return { status: m.status.sampleError, detail: m.status.sampleErrorDetail };
+    }
+    if (statusContext === "real_success") {
+      return { status: m.status.completed, detail: m.status.completedDetail };
+    }
+    if (statusContext === "real_failed") {
+      return {
+        status: m.status.failed,
+        detail: statusErrorDetail ?? m.status.failedMessage,
+      };
+    }
+    if (statusContext === "read_failed") {
+      return {
+        status: m.status.failed,
+        detail: statusErrorDetail ?? m.status.readFailedMessage,
+      };
+    }
+    return { status: m.status.ready, detail: m.status.readyDetail };
+  }, [lifecycleState, m, statusContext, statusErrorDetail]);
+
+  const proofNote = useMemo(() => {
+    if (proofStatus === "exported") {
+      return m.advanced.proofDone;
+    }
+    if (proofStatus === "failed") {
+      return proofErrorDetail ?? m.advanced.proofExportFailed;
+    }
+    if (!lastRealMode) {
+      return m.advanced.proofUnavailable;
+    }
+    return m.advanced.proofReady;
+  }, [lastRealMode, m, proofErrorDetail, proofStatus]);
+
   const applyResult = async (
     nextResult: BaseRunResultV1,
     outputDir: string,
-    sourceMode: RunMode,
+    sourceMode: "real_tauri_local_text" | "real_tauri_local_file",
   ) => {
     setLifecycleState("reading_result");
     await wait(40);
@@ -125,44 +187,37 @@ export default function App() {
     }
     const successful = lifecycle.classification === "success";
     setLifecycleState(successful ? "success" : "failed");
-    setStatus(successful ? "Run completed" : "Run failed");
-    setStatusDetail(
-      successful
-        ? "UI consumed a bundled adapter base_run_result_v1 artifact through the visible Tauri path."
-        : lifecycle.displayModel.error_message ?? "Run failed with a secret-safe error result.",
-    );
-    if (sourceMode === "real_tauri_local_text" || sourceMode === "real_tauri_local_file") {
-      setLastRealMode(sourceMode);
-      setProofStatus("not_exported");
-      setProofNote(
-        "Visible window run completed. Export interaction proof to seal click-path evidence.",
-      );
-    }
+    setStatusContext(successful ? "real_success" : "real_failed");
+    setStatusErrorDetail(nextResult.error?.user_message ?? nextResult.error?.technical_detail_safe ?? null);
+    setDisplayMode(sourceMode);
+    setLastRealMode(sourceMode);
+    setProofStatus("not_exported");
+    setProofPath(null);
+    setProofErrorDetail(null);
   };
 
   const loadSample = async (mode: "success" | "error") => {
-    setRunMode(mode === "success" ? "sample_success" : "sample_error");
     setLifecycleState("idle");
+    setStatusErrorDetail(null);
     setProofStatus("not_exported");
-    setProofNote("Sample mode remains available for regression, but it is not a click-proof substitute.");
+    setProofPath(null);
+    setProofErrorDetail(null);
     setRuntimeMode(mockArtifactClient.runtimeMode);
-    setStatus("Sample artifact mode");
-    setStatusDetail(
-      mode === "success"
-        ? "Showing bundled adapter success-shaped artifacts in sample mode."
-        : "Showing safe failed run_result artifacts in sample mode.",
-    );
     if (mode === "success") {
       const payload = await mockArtifactClient.loadSampleSuccess();
       setResult(payload.result);
       setEvidence(payload.evidence);
       setOutputPlan(await mockArtifactClient.openOutputFolderPlan(payload.result.receipt.output_root));
+      setDisplayMode("sample_success");
+      setStatusContext("sample_success");
       return;
     }
     const payload = await mockArtifactClient.loadSampleError();
     setResult(payload.result);
-    setEvidence(payload.evidence);
+    setEvidence(sampleErrorEvidence);
     setOutputPlan(await mockArtifactClient.openOutputFolderPlan(payload.result.receipt.output_root));
+    setDisplayMode("sample_error");
+    setStatusContext("sample_error");
   };
 
   const buildFailedResult = (requestId: string, message: string): BaseRunResultV1 => ({
@@ -171,23 +226,18 @@ export default function App() {
     error: {
       ...sampleErrorResult.error!,
       technical_detail_safe: message,
-      user_message: "Tauri invoke was not available or the local runtime failed safely.",
+      user_message: message,
     },
   });
 
   const handleRunText = async () => {
+    setStatusErrorDetail(null);
     setLifecycleState("preparing_request");
-    setStatus("Preparing request");
-    setStatusDetail("Preparing a local-text request for the bundled runtime.");
     await wait(40);
     setLifecycleState("invoking_tauri_command");
-    setStatus("Invoking Tauri command");
-    setStatusDetail("Calling the Rust command bridge from the visible shell.");
     try {
       await wait(40);
       setLifecycleState("processing_local_runtime");
-      setStatus("Processing local runtime");
-      setStatusDetail("The bundled adapter is processing the local text input.");
       const nextResult = await baseBridgeClient.runLocalText(inlineText, TEXT_OUTPUT_DIR);
       await applyResult(nextResult, TEXT_OUTPUT_DIR, "real_tauri_local_text");
     } catch (error) {
@@ -196,27 +246,24 @@ export default function App() {
       setResult(failed);
       setEvidence(buildEvidenceFromRunResult(failed));
       setLifecycleState("failed");
-      setStatus("Run failed");
-      setStatusDetail(message);
+      setStatusContext("real_failed");
+      setStatusErrorDetail(message);
+      setDisplayMode("real_tauri_local_text");
       setLastRealMode("real_tauri_local_text");
       setProofStatus("not_exported");
-      setProofNote("The real run failed safely. You can still export a proof pack from the visible window.");
+      setProofPath(null);
+      setProofErrorDetail(null);
     }
   };
 
   const handleRunFile = async () => {
+    setStatusErrorDetail(null);
     setLifecycleState("preparing_request");
-    setStatus("Preparing request");
-    setStatusDetail("Preparing a local-file request for the bundled runtime.");
     await wait(40);
     setLifecycleState("invoking_tauri_command");
-    setStatus("Invoking Tauri command");
-    setStatusDetail("Calling the Rust command bridge from the visible shell.");
     try {
       await wait(40);
       setLifecycleState("processing_local_runtime");
-      setStatus("Processing local runtime");
-      setStatusDetail("The bundled adapter is processing the local file input.");
       const nextResult = await baseBridgeClient.runLocalFile(inputPath, FILE_OUTPUT_DIR);
       await applyResult(nextResult, FILE_OUTPUT_DIR, "real_tauri_local_file");
     } catch (error) {
@@ -225,39 +272,34 @@ export default function App() {
       setResult(failed);
       setEvidence(buildEvidenceFromRunResult(failed));
       setLifecycleState("failed");
-      setStatus("Run failed");
-      setStatusDetail(message);
+      setStatusContext("real_failed");
+      setStatusErrorDetail(message);
+      setDisplayMode("real_tauri_local_file");
       setLastRealMode("real_tauri_local_file");
       setProofStatus("not_exported");
-      setProofNote("The real run failed safely. You can still export a proof pack from the visible window.");
+      setProofPath(null);
+      setProofErrorDetail(null);
     }
   };
 
   const handleReadLatest = async () => {
+    setStatusErrorDetail(null);
     setLifecycleState("reading_result");
-    setStatus("Reading latest result");
-    setStatusDetail("Re-reading the latest bundled adapter artifact set.");
     try {
       const nextResult = await baseBridgeClient.readRunResult(lastOutputDir);
-      await applyResult(nextResult, lastOutputDir, runMode);
+      const sourceMode =
+        displayMode === "real_tauri_local_file" ? "real_tauri_local_file" : "real_tauri_local_text";
+      await applyResult(nextResult, lastOutputDir, sourceMode);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       setLifecycleState("failed");
-      setStatus("Read failed");
-      setStatusDetail(message);
+      setStatusContext("read_failed");
+      setStatusErrorDetail(message);
     }
   };
 
   const handlePrimaryRun = async () => {
-    if (runMode === "sample_success") {
-      await loadSample("success");
-      return;
-    }
-    if (runMode === "sample_error") {
-      await loadSample("error");
-      return;
-    }
-    if (runMode === "real_tauri_local_file") {
+    if (inputMode === "file") {
       await handleRunFile();
       return;
     }
@@ -267,7 +309,7 @@ export default function App() {
   const handleExportProof = async () => {
     if (!lastRealMode) {
       setProofStatus("failed");
-      setProofNote("No real Tauri run has completed yet, so there is nothing trustworthy to export.");
+      setProofErrorDetail(m.advanced.proofUnavailable);
       return;
     }
     const marker =
@@ -307,93 +349,63 @@ export default function App() {
       );
       setProofStatus("exported");
       setProofPath(exported.proof_path);
-      setProofNote(
-        "Interaction proof exported. Run python scripts/check_tauri_window_interaction_proof.py --json to validate it.",
-      );
+      setProofErrorDetail(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       setProofStatus("failed");
-      setProofNote(message);
+      setProofErrorDetail(message);
     }
   };
 
   return (
-    <main className="app-shell">
-      <header className="top-band">
-        <p className="eyebrow">Base visible app shell</p>
-        <div className="top-band-meta">
-          <span>Local-only</span>
-          <span>Bundled adapter</span>
-          <span>Managed runtime baseline</span>
-          <span>Install layout supported=true</span>
-          <span>Current Python environment fallback</span>
-          <span>Installer runtime complete=false</span>
-          <span>Clean machine runtime proven=false</span>
-        </div>
-      </header>
-      <Welcome />
-      <RunModePanel mode={runMode} onModeChange={setRunMode} />
-      <section className="action-grid">
-        <FileDropZone inputPath={inputPath} onInputPathChange={setInputPath} supportedFormats={[...SUPPORTED_FORMATS]} />
-        <TextInputPanel inlineText={inlineText} onInlineTextChange={setInlineText} />
-      </section>
-      <section className="toolbar-card">
-        <div className="toolbar-row">
-          <button className="primary-button" type="button" onClick={() => void handlePrimaryRun()}>
-            {runMode === "real_tauri_local_file"
-              ? "Run local file path"
-              : runMode === "sample_success"
-                ? "Load sample success"
-                : runMode === "sample_error"
-                  ? "Load sample error"
-                  : "Run local text"}
-          </button>
-          <button className="secondary-button" type="button" onClick={() => void handleReadLatest()}>
-            Read latest result
-          </button>
-          <button className="ghost-button" type="button" onClick={() => void loadSample("success")}>
-            Sample success
-          </button>
-          <button className="ghost-button" type="button" onClick={() => void loadSample("error")}>
-            Sample error
-          </button>
-        </div>
-        <p className="toolbar-note">
-          Real Tauri modes are first-class in S10. Sample modes remain for regression only.
-        </p>
-      </section>
-      <section className="result-grid">
-        <RunStatusTimeline currentState={lifecycleState} />
-        <RuntimePreflightCard lineage={lineage} runtimeMode={runtimeMode} />
-        <SupportedFormatsNotice supportedFormats={[...SUPPORTED_FORMATS]} />
-      </section>
-      <ProgressPanel status={status} detail={statusDetail} runtimeMode={runtimeMode} />
-      <section className="result-grid">
-        <LocalOutputControls
-          lastOutputDir={lastOutputDir}
-          onReadLatest={() => void handleReadLatest()}
-          onExportProof={() => void handleExportProof()}
-          proofEnabled={lastRealMode !== null}
-        />
-        <InteractionProofPanel
-          enabled={lastRealMode !== null}
-          note={proofNote}
-          proofPath={proofPath}
-          proofStatus={proofStatus}
-          onExport={() => void handleExportProof()}
-        />
-        <ResultSummary result={result} />
-        <UsageFactCard usageFact={result.usage_fact} />
-        <ReceiptCard receipt={result.receipt} />
-        <EvidenceCard evidence={evidence} />
-        <ErrorDiagnosisPanel error={result.error} />
-        <OutputFolderPlanCard plan={outputPlan} />
-      </section>
-      <NormalizedTextPreview preview={result.normalized_text_preview} />
-      <LineageStatusCard lineage={lineage} runtimeMode={runtimeMode} />
-      <footer className="footer-note">
-        Visible shell now surfaces run lifecycle, runtime truth, managed runtime status, install-layout readiness, supported format limits, and proof export. Full window click e2e still requires an actual proof pack, and clean-machine runtime remains unproven.
-      </footer>
-    </main>
+    <AppShell>
+      <InputCard
+        inputMode={inputMode}
+        inputPath={inputPath}
+        inlineText={inlineText}
+        onInputModeChange={setInputMode}
+        onInputPathChange={setInputPath}
+        onInlineTextChange={setInlineText}
+        supportedFormats={[...SUPPORTED_FORMATS]}
+      />
+      <RunCard
+        inputMode={inputMode}
+        lifecycleState={lifecycleState}
+        runtimeMode={runtimeMode}
+        status={statusView.status}
+        detail={statusView.detail}
+        onRun={() => void handlePrimaryRun()}
+        onReadLatest={() => void handleReadLatest()}
+        isRunning={isRunning}
+      />
+      <UserResultCard
+        result={result}
+        evidence={evidence}
+        outputPlan={outputPlan}
+        lastOutputDir={lastOutputDir}
+        onReadLatest={() => void handleReadLatest()}
+      />
+      <AdvancedDiagnostics
+        result={result}
+        evidence={evidence}
+        lineage={lineage}
+        runtimeMode={runtimeMode}
+        proofStatus={proofStatus}
+        proofPath={proofPath}
+        proofNote={proofNote}
+        proofEnabled={lastRealMode !== null}
+        onExportProof={() => void handleExportProof()}
+        onLoadSampleSuccess={() => void loadSample("success")}
+        onLoadSampleError={() => void loadSample("error")}
+      />
+    </AppShell>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <BaseApp />
+    </LanguageProvider>
   );
 }

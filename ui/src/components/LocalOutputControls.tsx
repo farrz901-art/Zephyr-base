@@ -1,8 +1,11 @@
+import { useLanguage } from "../i18n/useLanguage";
+
 interface LocalOutputControlsProps {
   lastOutputDir: string;
   onReadLatest: () => void;
   onExportProof: () => void;
   proofEnabled: boolean;
+  showProofAction?: boolean;
 }
 
 export function LocalOutputControls({
@@ -10,30 +13,31 @@ export function LocalOutputControls({
   onReadLatest,
   onExportProof,
   proofEnabled,
+  showProofAction = true,
 }: LocalOutputControlsProps) {
+  const { messages: m } = useLanguage();
+
   return (
-    <section className="panel-card">
-      <p className="eyebrow">Local outputs</p>
-      <h2>Result artifacts</h2>
-      <p className="panel-copy">
-        The visible shell reads one `base_run_result_v1` family and keeps the output folder
-        path visible.
-      </p>
+    <section className="panel-card nested-card">
+      <p className="eyebrow">{m.result.outputTitle}</p>
+      <h3>{m.result.outputDir}</h3>
       <div className="toolbar-row">
         <button className="secondary-button" type="button" onClick={onReadLatest}>
-          Read latest result
+          {m.run.readLatest}
         </button>
-        <button
-          className="ghost-button"
-          disabled={!proofEnabled}
-          type="button"
-          onClick={onExportProof}
-        >
-          Export proof from current result
-        </button>
+        {showProofAction ? (
+          <button
+            className="ghost-button"
+            disabled={!proofEnabled}
+            type="button"
+            onClick={onExportProof}
+          >
+            {m.advanced.proofExport}
+          </button>
+        ) : null}
       </div>
       <p className="toolbar-note">
-        Last output dir: <strong>{lastOutputDir}</strong>
+        {m.result.outputDir}: <strong>{lastOutputDir}</strong>
       </p>
     </section>
   );

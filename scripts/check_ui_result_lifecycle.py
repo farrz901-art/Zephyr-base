@@ -58,8 +58,11 @@ def main(argv: list[str] | None = None) -> int:
     contract_text = _read_text(root / "ui/src/contracts/baseRunResult.ts")
     sample_success_text = _read_text(root / "ui/src/fixtures/sampleRunResult.ts")
     sample_error_text = _read_text(root / "ui/src/fixtures/sampleErrorResult.ts")
-    app_text = _read_text(root / "ui/src/App.tsx")
-    bridge_client_text = _read_text(root / "ui/src/services/baseBridgeClient.ts")
+    ui_text = "\n".join(
+        _read_text(path)
+        for path in (root / "ui/src").rglob("*")
+        if path.is_file()
+    )
 
     candidates = [
         root / ".tmp/s9_tauri_app_path/run_result.json",
@@ -73,7 +76,7 @@ def main(argv: list[str] | None = None) -> int:
     sample_error_consumed = 'status: "failed"' in sample_error_text and "secret_safe: true" in sample_error_text
     real_run_result_consumed = real_run_result is not None and _has_required_result_shape(real_run_result)
     display_model_fields_covered = all(
-        marker in app_text or marker in bridge_client_text
+        marker in ui_text
         for marker in (
             "ResultSummary",
             "NormalizedTextPreview",
@@ -86,8 +89,8 @@ def main(argv: list[str] | None = None) -> int:
             "extractDisplayModel",
         )
     )
-    error_display_covered = "ErrorDiagnosisPanel" in app_text
-    output_folder_plan_covered = "OutputFolderPlan" in app_text
+    error_display_covered = "ErrorDiagnosisPanel" in ui_text
+    output_folder_plan_covered = "OutputFolderPlan" in ui_text
 
     if real_run_result is not None:
         usage_fact = real_run_result.get("usage_fact", {})
@@ -96,7 +99,7 @@ def main(argv: list[str] | None = None) -> int:
 
     report = {
         "schema_version": 1,
-        "report_id": "zephyr.base.s8.ui_result_lifecycle_check.v1",
+        "report_id": "zephyr.base.s16.ui_result_lifecycle_check.v1",
         "summary": {
             "pass": all(
                 (

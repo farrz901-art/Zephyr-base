@@ -70,6 +70,15 @@ jobs:
       - name: Windows installer packaging policy exists
         run: Test-Path docs/WINDOWS_INSTALLER_PACKAGING_POLICY.md
 
+      - name: Base UX policy doc exists
+        run: Test-Path docs/BASE_USER_EXPERIENCE_POLICY.md
+
+      - name: Base bilingual brief exists
+        run: Test-Path docs/BASE_BILINGUAL_UI_BRIEF.md
+
+      - name: Manual Base UX smoke doc exists
+        run: Test-Path docs/MANUAL_BASE_UX_SMOKE.md
+
       - name: Windows packaging readme exists
         run: Test-Path packaging/windows/README.md
 
@@ -112,6 +121,9 @@ jobs:
       - name: UI shell check
         run: python scripts/check_ui_shell.py --json
 
+      - name: Base UX shell check
+        run: python scripts/check_base_ux_shell.py --json
+
       - name: UI result lifecycle check
         run: python scripts/check_ui_result_lifecycle.py --json
 
@@ -123,6 +135,9 @@ jobs:
 
       - name: UI build check
         run: python scripts/check_ui_build.py --json
+
+      - name: UI typecheck
+        run: npm --prefix ui run typecheck
 
       - name: Build Tauri app baseline
         continue-on-error: true

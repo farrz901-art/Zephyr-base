@@ -14,36 +14,28 @@ REQUIRED_FILES = [
     Path("docs/TAURI_GENERATED_ARTIFACTS.md"),
     Path("docs/BASE_INSTALL_LAYOUT_POLICY.md"),
     Path("docs/CLEAN_MACHINE_RUNTIME_PROOF_PLAN.md"),
+    Path("docs/BASE_USER_EXPERIENCE_POLICY.md"),
+    Path("docs/BASE_BILINGUAL_UI_BRIEF.md"),
+    Path("docs/MANUAL_BASE_UX_SMOKE.md"),
     Path("ui/package.json"),
     Path("ui/tsconfig.json"),
     Path("ui/vite.config.ts"),
     Path("ui/index.html"),
     Path("ui/src/main.tsx"),
     Path("ui/src/App.tsx"),
+    Path("ui/src/i18n/messages.ts"),
+    Path("ui/src/i18n/useLanguage.tsx"),
     Path("ui/src/contracts/baseRunResult.ts"),
     Path("ui/src/services/baseBridgeClient.ts"),
     Path("ui/src/services/mockArtifactClient.ts"),
     Path("ui/src/fixtures/sampleRunResult.ts"),
     Path("ui/src/fixtures/sampleErrorResult.ts"),
-    Path("ui/src/components/Welcome.tsx"),
-    Path("ui/src/components/FileDropZone.tsx"),
-    Path("ui/src/components/TextInputPanel.tsx"),
-    Path("ui/src/components/ProgressPanel.tsx"),
-    Path("ui/src/components/ResultSummary.tsx"),
-    Path("ui/src/components/NormalizedTextPreview.tsx"),
-    Path("ui/src/components/EvidenceCard.tsx"),
-    Path("ui/src/components/ReceiptCard.tsx"),
-    Path("ui/src/components/UsageFactCard.tsx"),
-    Path("ui/src/components/ErrorDiagnosisPanel.tsx"),
-    Path("ui/src/components/LineageStatusCard.tsx"),
-    Path("ui/src/components/OutputFolderPlan.tsx"),
-    Path("ui/src/components/RunModePanel.tsx"),
-    Path("ui/src/components/RunStatusTimeline.tsx"),
-    Path("ui/src/components/RuntimePreflightCard.tsx"),
-    Path("ui/src/components/InteractionProofPanel.tsx"),
-    Path("ui/src/components/LocalOutputControls.tsx"),
-    Path("ui/src/components/SupportedFormatsNotice.tsx"),
-    Path("ui/src/styles/tokens.css"),
+    Path("ui/src/components/common/LanguageToggle.tsx"),
+    Path("ui/src/components/layout/AppShell.tsx"),
+    Path("ui/src/components/input/InputCard.tsx"),
+    Path("ui/src/components/run/RunCard.tsx"),
+    Path("ui/src/components/results/UserResultCard.tsx"),
+    Path("ui/src/components/diagnostics/AdvancedDiagnostics.tsx"),
     Path("scripts/check_ui_result_lifecycle.py"),
     Path("scripts/check_ui_build.py"),
     Path("scripts/check_tauri_app_path.py"),
@@ -59,6 +51,7 @@ REQUIRED_FILES = [
     Path("scripts/audit_base_install_layout.py"),
     Path("scripts/check_base_install_layout_runtime_smoke.py"),
     Path("scripts/check_install_layout_baseline.py"),
+    Path("scripts/check_base_ux_shell.py"),
 ]
 FORBIDDEN_COMMERCIAL_TERMS = (
     "license_verify",
@@ -108,12 +101,14 @@ def main(argv: list[str] | None = None) -> int:
     ui_text = "\n".join(_read_text(path).lower() for path in ui_files)
     forbidden_hits = [term for term in FORBIDDEN_COMMERCIAL_TERMS if term in ui_text]
     network_hits = [term for term in FORBIDDEN_NETWORK_TERMS if term in ui_text]
-    app_text = _read_text(root / "ui/src/App.tsx")
+    app_text = _read_text(root / "ui/src/App.tsx").lower()
     bridge_client_text = _read_text(root / "ui/src/services/baseBridgeClient.ts")
     commands_rs_text = _read_text(root / "src-tauri/src/commands.rs")
     main_rs_text = _read_text(root / "src-tauri/src/main.rs")
     sample_success_text = _read_text(root / "ui/src/fixtures/sampleRunResult.ts").lower()
     sample_error_text = _read_text(root / "ui/src/fixtures/sampleErrorResult.ts").lower()
+    advanced_text = _read_text(root / "ui/src/components/diagnostics/AdvancedDiagnostics.tsx").lower()
+    messages_text = _read_text(root / "ui/src/i18n/messages.ts").lower()
 
     format_hits = [fmt for fmt in SUPPORTED_FORMATS if fmt in ui_text]
     command_hits = [name for name in COMMAND_NAMES if name in bridge_client_text]
@@ -121,33 +116,32 @@ def main(argv: list[str] | None = None) -> int:
     cli_command_hits = [name.replace("_", "-") for name in COMMAND_NAMES if name.replace("_", "-") in main_rs_text]
     direct_python_hits = [term for term in ("run_public_core_adapter.py", "subprocess", "python.exe") if term in ui_text]
     zephyr_dev_root_hits = [term for term in ("zephyr_dev_root", "zephyr-dev-root") if term in ui_text]
-    invoke_mode_declared = "invoke_ready_not_window_e2e" in bridge_client_text and "real tauri modes are first-class" in app_text.lower()
-    ui_real_run_controls_present = all(
-        label in ui_text
-        for label in ("run local text", "run local file path", "read latest result")
-    )
-    proof_panel_present = "interactionproofpanel" in ui_text and "export interaction proof" in ui_text
-    unsupported_notice_present = ".pdf" in ui_text and ".docx" in ui_text and "does not claim cloud" in ui_text
+    invoke_mode_declared = "invoke_ready_not_window_e2e" in bridge_client_text
+    ui_real_run_controls_present = "run" in messages_text and "read latest result" in messages_text
+    proof_panel_present = "interactionproofpanel" in ui_text and "proofexport" in messages_text
+    unsupported_notice_present = "pdf" in messages_text and "docx" in messages_text
     camel_case_payloads_present = all(
         token in bridge_client_text
         for token in ("inputPath", "outputDir", "inlineText", "runResult")
     )
     managed_runtime_status_present = all(
-        token in ui_text
+        token in messages_text
         for token in (
-            "managed runtime available",
-            "managed runtime selected",
-            "selected python",
-            "install layout supported",
-            "installer built",
-            "release created",
-            "clean machine runtime proven",
+            "managedruntimeavailable",
+            "managedruntimeselected",
+            "selectedpython",
+            "installlayoutsupported",
+            "installerbuilt",
+            "releasecreated",
+            "cleanmachineproven",
         )
-    )
+    ) and "runtimepreflightcard" in ui_text and "lineagestatuscard" in ui_text
+    bilingual_markers_present = all(token in messages_text for token in ('en: {', 'zh: {', 'english', '中文'))
+    advanced_collapsed = "<details" in advanced_text and " open" not in advanced_text
 
     report = {
         "schema_version": 1,
-        "report_id": "zephyr.base.s10.ui_shell_check.v1",
+        "report_id": "zephyr.base.s16.ui_shell_check.v1",
         "summary": {
             "pass": not missing
             and not forbidden_hits
@@ -159,6 +153,8 @@ def main(argv: list[str] | None = None) -> int:
             and unsupported_notice_present
             and camel_case_payloads_present
             and managed_runtime_status_present
+            and bilingual_markers_present
+            and advanced_collapsed
             and len(command_hits) == len(COMMAND_NAMES)
             and len(rust_command_hits) == len(COMMAND_NAMES)
             and len(cli_command_hits) == len(COMMAND_NAMES)
@@ -176,6 +172,9 @@ def main(argv: list[str] | None = None) -> int:
             "interaction_proof_panel_exists": proof_panel_present,
             "camel_case_tauri_payloads_present": camel_case_payloads_present,
             "managed_runtime_status_present": managed_runtime_status_present,
+            "bilingual_markers_present": bilingual_markers_present,
+            "advanced_collapsed_by_default": advanced_collapsed,
+            "unsupported_notice_present": unsupported_notice_present,
         },
         "missing_files": missing,
         "forbidden_hits": forbidden_hits,

@@ -5,29 +5,21 @@ import json
 from pathlib import Path
 
 REQUIRED_FILES = [
-    Path("ui/src/components/RunModePanel.tsx"),
     Path("ui/src/components/RunStatusTimeline.tsx"),
     Path("ui/src/components/RuntimePreflightCard.tsx"),
     Path("ui/src/components/InteractionProofPanel.tsx"),
     Path("ui/src/components/LocalOutputControls.tsx"),
     Path("ui/src/components/SupportedFormatsNotice.tsx"),
+    Path("ui/src/components/diagnostics/AdvancedDiagnostics.tsx"),
+    Path("ui/src/components/input/InputCard.tsx"),
     Path("scripts/check_tauri_window_interaction_proof.py"),
     Path("scripts/check_tauri_invoke_payload_shape.py"),
     Path("scripts/check_python_runtime_dependencies.py"),
     Path("docs/MANUAL_TAURI_WINDOW_PROOF.md"),
+    Path("docs/MANUAL_BASE_UX_SMOKE.md"),
 ]
-REAL_MODE_LABELS = (
-    "real tauri local text",
-    "real tauri local file",
-    "run local text",
-    "run local file path",
-)
-LIFECYCLE_TERMS = (
-    "preparing request",
-    "invoking tauri command",
-    "processing local runtime",
-    "reading result",
-)
+REAL_MODE_LABELS = ("paste text", "local file path", "run", "read latest result")
+LIFECYCLE_TERMS = ("ready", "preparing", "running", "completed", "failed")
 FORBIDDEN_TERMS = (
     "license_verify",
     "entitlement",
@@ -59,6 +51,9 @@ def main(argv: list[str] | None = None) -> int:
         if path.is_file()
     )
     app_text = (root / "ui/src/App.tsx").read_text(encoding="utf-8", errors="ignore").lower()
+    advanced_text = (
+        root / "ui/src/components/diagnostics/AdvancedDiagnostics.tsx"
+    ).read_text(encoding="utf-8", errors="ignore").lower()
     bridge_client_text = (root / "ui/src/services/baseBridgeClient.ts").read_text(
         encoding="utf-8",
         errors="ignore",
@@ -68,18 +63,21 @@ def main(argv: list[str] | None = None) -> int:
 
     report = {
         "schema_version": 1,
-        "report_id": "zephyr.base.s10.local_result_lifecycle_ux_check.v1",
+        "report_id": "zephyr.base.s16.local_result_lifecycle_ux_check.v1",
         "summary": {
             "pass": not missing
             and not forbidden_hits
             and not network_hits
             and all(label in ui_text for label in REAL_MODE_LABELS)
             and all(term in ui_text for term in LIFECYCLE_TERMS)
-            and "export interaction proof" in ui_text
-            and "installer runtime complete=false" in app_text
+            and "<details" in advanced_text
+            and "samplesuccess" in advanced_text
+            and "sampleerror" in advanced_text
+            and "interactionproofpanel" in ui_text
+            and "installer runtime complete" in ui_text
             and all(token in bridge_client_text for token in ("inputPath", "outputDir", "inlineText", "runResult")),
             "real_run_mode_exists": all(label in ui_text for label in REAL_MODE_LABELS),
-            "sample_mode_retained": "sample success" in ui_text and "sample error" in ui_text,
+            "sample_mode_retained": "samplesuccess" in advanced_text and "sampleerror" in advanced_text,
             "run_status_timeline_exists": "runstatustimeline" in ui_text,
             "runtime_preflight_card_exists": "runtimepreflightcard" in ui_text,
             "supported_formats_notice_exists": "supportedformatsnotice" in ui_text,
@@ -90,6 +88,7 @@ def main(argv: list[str] | None = None) -> int:
         "missing_files": missing,
         "forbidden_hits": forbidden_hits,
         "network_hits": network_hits,
+        "app_mentions_sample": "sample success" in app_text or "sample error" in app_text,
     }
     out_path = root / ".tmp" / "local_result_lifecycle_ux_check.json"
     _write_json(out_path, report)

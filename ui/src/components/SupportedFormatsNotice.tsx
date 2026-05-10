@@ -1,19 +1,20 @@
+import { useLanguage } from "../i18n/useLanguage";
+
 interface SupportedFormatsNoticeProps {
   supportedFormats: readonly string[];
 }
 
 export function SupportedFormatsNotice({ supportedFormats }: SupportedFormatsNoticeProps) {
+  const { messages: m } = useLanguage();
+
   return (
-    <section className="panel-card">
-      <p className="eyebrow">Supported formats</p>
-      <h2>Base first-slice format boundary</h2>
+    <section className="panel-card nested-card">
+      <p className="eyebrow">{m.supportedFormats.title}</p>
+      <h3>{m.supportedFormats.subtitle}</h3>
       <p className="panel-copy">
-        Current support is intentionally limited to {supportedFormats.join(", ")}.
+        {m.supportedFormats.current}: {supportedFormats.join(", ")}
       </p>
-      <p className="toolbar-note">
-        `.pdf`, `.docx`, and image-style inputs are not supported in Base first slice. The
-        UI does not claim cloud processing, paid upgrade paths, or Pro-only unlocks.
-      </p>
+      <p className="toolbar-note">{m.supportedFormats.unsupported}</p>
     </section>
   );
 }
