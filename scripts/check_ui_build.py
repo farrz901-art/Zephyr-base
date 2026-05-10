@@ -24,6 +24,16 @@ def _run(command: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
+def _run_windows_shell(command: str, cwd: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["cmd.exe", "/c", command],
+        cwd=cwd,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build and typecheck the Zephyr-base UI shell.")
     parser.add_argument("--json", action="store_true")
@@ -32,8 +42,8 @@ def main(argv: list[str] | None = None) -> int:
     root = Path(__file__).resolve().parents[1]
     ui_root = root / "ui"
     node_available = shutil.which("node") is not None
-    npm_executable = shutil.which("npm")
-    npm_available = npm_executable is not None
+    npm_executable = shutil.which("npm.cmd") or shutil.which("npm")
+    npm_available = npm_executable is not None or node_available
     lock_file_exists = (ui_root / "package-lock.json").exists()
     node_modules_exists = (ui_root / "node_modules").exists()
 
@@ -45,18 +55,34 @@ def main(argv: list[str] | None = None) -> int:
     typecheck_detail = "typecheck not attempted"
 
     if node_available and npm_available:
-        install_command = [npm_executable, "--prefix", "ui", "ci" if lock_file_exists else "install"]
-        install_completed = _run(install_command, root)
+        if npm_executable is not None:
+            install_command = [npm_executable, "--prefix", "ui", "ci" if lock_file_exists else "install"]
+            install_completed = _run(install_command, root)
+            build_completed = None
+            typecheck_completed = None
+            build_command = [npm_executable, "--prefix", "ui", "run", "build"]
+            typecheck_command = [npm_executable, "--prefix", "ui", "run", "typecheck"]
+        else:
+            install_completed = _run_windows_shell(
+                f"npm --prefix ui {'ci' if lock_file_exists else 'install'}",
+                root,
+            )
+            build_completed = None
+            typecheck_completed = None
+            build_command = []
+            typecheck_command = []
         install_pass = install_completed.returncode == 0
         install_detail = (install_completed.stdout + "\n" + install_completed.stderr).strip()
 
-        build_completed = None
-        typecheck_completed = None
         if install_pass or node_modules_exists:
-            build_completed = _run([npm_executable, "--prefix", "ui", "run", "build"], root)
+            if npm_executable is not None:
+                build_completed = _run(build_command, root)
+                typecheck_completed = _run(typecheck_command, root)
+            else:
+                build_completed = _run_windows_shell("npm --prefix ui run build", root)
+                typecheck_completed = _run_windows_shell("npm --prefix ui run typecheck", root)
             build_pass = build_completed.returncode == 0
             build_detail = (build_completed.stdout + "\n" + build_completed.stderr).strip()
-            typecheck_completed = _run([npm_executable, "--prefix", "ui", "run", "typecheck"], root)
             typecheck_pass = typecheck_completed.returncode == 0
             typecheck_detail = (typecheck_completed.stdout + "\n" + typecheck_completed.stderr).strip()
             if not install_pass and node_modules_exists and build_pass and typecheck_pass:
