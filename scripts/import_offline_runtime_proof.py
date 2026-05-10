@@ -29,6 +29,28 @@ def _resolve_proof_root(candidate: Path) -> Path:
     raise FileNotFoundError(f"Could not locate offline runtime proof under {candidate}")
 
 
+def _load_validation_report(
+    *,
+    imported_proof_root: Path,
+    repo_root: Path,
+    validator_stdout: str,
+) -> dict[str, object]:
+    preferred = imported_proof_root / "offline_runtime_proof_validation.json"
+    if preferred.exists():
+        return _read_json(preferred)
+
+    fallback = repo_root / ".tmp/offline_runtime_proof_validation.json"
+    if fallback.exists():
+        return _read_json(fallback)
+
+    stdout = validator_stdout.strip()
+    if stdout:
+        loaded = json.loads(stdout)
+        if isinstance(loaded, dict):
+            return loaded
+    return {}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Import an external offline runtime proof into the repo .tmp area.")
     parser.add_argument("--proof-root", type=Path, required=True)
@@ -44,21 +66,32 @@ def main(argv: list[str] | None = None) -> int:
     shutil.copytree(source_proof_root, dest_root / "proof", dirs_exist_ok=True)
 
     completed = subprocess.run(
-        [sys.executable, str(root / "scripts/validate_offline_runtime_proof.py"), "--proof-root", str(dest_root / "proof"), "--json"],
+        [
+            sys.executable,
+            str(root / "scripts/validate_offline_runtime_proof.py"),
+            "--proof-root",
+            str(dest_root / "proof"),
+            "--json",
+        ],
         cwd=root,
         check=False,
         capture_output=True,
         text=True,
     )
-    validation_path = root / ".tmp/offline_runtime_proof_validation.json"
-    validation = _read_json(validation_path) if validation_path.exists() else {}
+    validation = _load_validation_report(
+        imported_proof_root=dest_root / "proof",
+        repo_root=root,
+        validator_stdout=completed.stdout,
+    )
+    summary = validation.get("summary", {}) if isinstance(validation.get("summary"), dict) else {}
+    validation_pass = summary.get("pass") is True
     report = {
         "schema_version": 1,
         "report_id": "zephyr.base.s14.import_offline_runtime_proof.v1",
         "summary": {
-            "pass": completed.returncode == 0 and validation.get("summary", {}).get("pass") is True,
+            "pass": completed.returncode == 0 and validation_pass,
             "external_offline_proof_imported": True,
-            "external_offline_proof_pass": validation.get("summary", {}).get("pass") is True,
+            "external_offline_proof_pass": validation_pass,
         },
         "imported_proof_root": str(dest_root / "proof"),
         "validator": {
