@@ -27,12 +27,20 @@ export function ProgressPanel({ status, detail, runtimeMode }: ProgressPanelProp
           <dd>{String(runtimeMode.uses_bundled_adapter)}</dd>
         </div>
         <div>
-          <dt>{m.runtime.invokeReady}</dt>
-          <dd>{String(runtimeMode.tauri_invoke_ready)}</dd>
+          <dt>{m.runtime.managedRuntimeAvailable}</dt>
+          <dd>{String(runtimeMode.managed_runtime_available ?? false)}</dd>
         </div>
         <div>
-          <dt>{m.runtime.invokeE2E}</dt>
-          <dd>{String(runtimeMode.tauri_invoke_e2e_verified)}</dd>
+          <dt>{m.runtime.managedRuntimeSelected}</dt>
+          <dd>{String(runtimeMode.managed_runtime_selected ?? false)}</dd>
+        </div>
+        <div>
+          <dt>{m.runtime.selectedPython}</dt>
+          <dd>{runtimeMode.selected_python_path ?? "python"}</dd>
+        </div>
+        <div>
+          <dt>{m.runtime.invokeReady}</dt>
+          <dd>{String(runtimeMode.tauri_invoke_ready)}</dd>
         </div>
       </dl>
     </section>

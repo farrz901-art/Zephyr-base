@@ -8,6 +8,7 @@ import type {
   InteractionProofWriteResult,
   LineageSnapshotV1,
   OutputFolderPlanPayload,
+  PrepareLocalRuntimeResult,
   ReadRunResultPayload,
   ResultDisplayModel,
   RunLocalFilePayload,
@@ -26,6 +27,7 @@ export interface OutputFolderPlan {
 }
 
 export const TAURI_COMMANDS = {
+  prepare_local_runtime: "prepare_local_runtime",
   run_local_file: "run_local_file",
   run_local_text: "run_local_text",
   read_run_result: "read_run_result",
@@ -43,6 +45,9 @@ export const runtimeMode: RuntimeModeSummary = {
   embedded_python_runtime: false,
   wheelhouse_bundled: false,
   installer_runtime_complete: false,
+  managed_runtime_available: false,
+  managed_runtime_selected: false,
+  selected_python_path: "python",
 };
 
 type TauriCommandName = (typeof TAURI_COMMANDS)[keyof typeof TAURI_COMMANDS];
@@ -65,6 +70,24 @@ async function invokeJson<TPayload, TResult>(
     );
   }
   return invoke<TResult>(command, payload as Record<string, unknown> | undefined);
+}
+
+export function deriveRuntimeMode(
+  baseMode: RuntimeModeSummary,
+  lineage: LineageSnapshotV1 | null,
+): RuntimeModeSummary {
+  if (!lineage) {
+    return baseMode;
+  }
+  return {
+    ...baseMode,
+    uses_current_python_environment: lineage.uses_current_python_environment,
+    wheelhouse_bundled: lineage.wheelhouse_bundled,
+    installer_runtime_complete: lineage.installer_runtime_complete,
+    managed_runtime_available: lineage.managed_runtime_available,
+    managed_runtime_selected: lineage.managed_python_runtime_used,
+    selected_python_path: lineage.selected_python_path,
+  };
 }
 
 export function buildEvidenceFromRunResult(result: BaseRunResultV1): BaseContentEvidenceV1 {
@@ -112,6 +135,11 @@ export function createRunLifecycle(result: BaseRunResultV1) {
 export const baseBridgeClient = {
   runtimeMode,
   hasTauriInvoke,
+  async prepareLocalRuntime(): Promise<PrepareLocalRuntimeResult> {
+    return invokeJson<undefined, PrepareLocalRuntimeResult>(
+      TAURI_COMMANDS.prepare_local_runtime,
+    );
+  },
   async runLocalFile(inputPath: string, outputDir: string): Promise<BaseRunResultV1> {
     const payload: RunLocalFilePayload = {
       inputPath,
@@ -140,7 +168,9 @@ export const baseBridgeClient = {
     );
   },
   async readLineageSnapshot(): Promise<LineageSnapshotV1> {
-    return invokeJson<undefined, LineageSnapshotV1>(TAURI_COMMANDS.read_lineage_snapshot);
+    return invokeJson<undefined, LineageSnapshotV1>(
+      TAURI_COMMANDS.read_lineage_snapshot,
+    );
   },
   async openOutputFolderPlan(outputDir: string): Promise<OutputFolderPlan> {
     const payload: OutputFolderPlanPayload = { outputDir };

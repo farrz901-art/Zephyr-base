@@ -30,7 +30,7 @@ fn print_result(result: Result<Value, String>) -> i32 {
 
 fn usage() {
     eprintln!(
-        "Zephyr Base Tauri app path. Commands: run-local-file <input_path> <output_dir>, run-local-text <inline_text> <output_dir>, read-run-result <output_dir>, open-output-folder-plan <output_dir>, read-lineage-snapshot"
+        "Zephyr Base Tauri app path. Commands: prepare-local-runtime, run-local-file <input_path> <output_dir>, run-local-text <inline_text> <output_dir>, read-run-result <output_dir>, open-output-folder-plan <output_dir>, read-lineage-snapshot"
     );
 }
 
@@ -41,6 +41,7 @@ fn maybe_run_cli() -> Option<i32> {
     };
 
     let exit_code = match command.as_str() {
+        "prepare-local-runtime" => print_result(commands::prepare_local_runtime()),
         "run-local-file" => {
             let Some(input_path) = args.next() else {
                 usage();
@@ -93,6 +94,7 @@ fn main() {
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            commands::prepare_local_runtime,
             commands::run_local_file,
             commands::run_local_text,
             commands::read_run_result,

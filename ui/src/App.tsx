@@ -28,6 +28,7 @@ import {
   baseBridgeClient,
   buildEvidenceFromRunResult,
   createRunLifecycle,
+  deriveRuntimeMode,
   type OutputFolderPlan,
 } from "./services/baseBridgeClient";
 import { mockArtifactClient } from "./services/mockArtifactClient";
@@ -37,6 +38,7 @@ const FILE_OUTPUT_DIR = ".tmp/ui_shell_file";
 const TEXT_OUTPUT_DIR = ".tmp/ui_shell_text";
 const PROOF_OUTPUT_DIR = ".tmp/s10_tauri_window_interaction";
 const DEFAULT_MARKER = "ZEPHYR_BASE_S16_UX_TEXT_MARKER";
+const RUNTIME_PREPARE_ERROR = "Local runtime could not be prepared.";
 
 type DisplayMode =
   | "real_tauri_local_text"
@@ -63,6 +65,7 @@ function BaseApp() {
   const [lifecycleState, setLifecycleState] = useState<RunLifecycleState>("idle");
   const [statusContext, setStatusContext] = useState<StatusContext>("ready");
   const [statusErrorDetail, setStatusErrorDetail] = useState<string | null>(null);
+  const [statusDetailOverride, setStatusDetailOverride] = useState<string | null>(null);
   const [inputPath, setInputPath] = useState("tests/fixtures/real_adapter_sample_input.txt");
   const [inlineText, setInlineText] = useState(DEFAULT_MARKER);
   const [result, setResult] = useState<BaseRunResultV1>(sampleSuccessResult);
@@ -79,18 +82,24 @@ function BaseApp() {
     commercial_logic_allowed: false,
   });
   const [lastOutputDir, setLastOutputDir] = useState(TEXT_OUTPUT_DIR);
-  const [lastRealMode, setLastRealMode] = useState<"real_tauri_local_text" | "real_tauri_local_file" | null>(null);
+  const [lastRealMode, setLastRealMode] = useState<
+    "real_tauri_local_text" | "real_tauri_local_file" | null
+  >(null);
   const [proofStatus, setProofStatus] = useState<"not_exported" | "exported" | "failed">("not_exported");
   const [proofPath, setProofPath] = useState<string | null>(null);
   const [proofErrorDetail, setProofErrorDetail] = useState<string | null>(null);
+
+  const applyLineageSnapshot = (snapshot: LineageSnapshotV1) => {
+    setLineage(snapshot);
+    setRuntimeMode(deriveRuntimeMode(baseBridgeClient.runtimeMode, snapshot));
+  };
 
   useEffect(() => {
     const loadInitialState = async () => {
       if (baseBridgeClient.hasTauriInvoke()) {
         try {
           const lineageSnapshot = await baseBridgeClient.readLineageSnapshot();
-          setLineage(lineageSnapshot);
-          setRuntimeMode(baseBridgeClient.runtimeMode);
+          applyLineageSnapshot(lineageSnapshot);
           return;
         } catch {
           // fall through to sample lineage state
@@ -114,16 +123,28 @@ function BaseApp() {
 
   const statusView = useMemo(() => {
     if (lifecycleState === "preparing_request") {
-      return { status: m.status.preparing, detail: m.status.preparingDetail };
+      return {
+        status: m.status.preparing,
+        detail: statusDetailOverride ?? m.status.preparingDetail,
+      };
     }
     if (lifecycleState === "invoking_tauri_command") {
-      return { status: m.status.running, detail: m.status.invokingDetail };
+      return {
+        status: m.status.running,
+        detail: statusDetailOverride ?? m.status.invokingDetail,
+      };
     }
     if (lifecycleState === "processing_local_runtime") {
-      return { status: m.status.running, detail: m.status.processingDetail };
+      return {
+        status: m.status.running,
+        detail: statusDetailOverride ?? m.status.processingDetail,
+      };
     }
     if (lifecycleState === "reading_result") {
-      return { status: m.status.running, detail: m.status.readingDetail };
+      return {
+        status: m.status.running,
+        detail: statusDetailOverride ?? m.status.readingDetail,
+      };
     }
     if (statusContext === "sample_success") {
       return { status: m.status.sampleSuccess, detail: m.status.sampleSuccessDetail };
@@ -147,7 +168,7 @@ function BaseApp() {
       };
     }
     return { status: m.status.ready, detail: m.status.readyDetail };
-  }, [lifecycleState, m, statusContext, statusErrorDetail]);
+  }, [lifecycleState, m, statusContext, statusDetailOverride, statusErrorDetail]);
 
   const proofNote = useMemo(() => {
     if (proofStatus === "exported") {
@@ -168,6 +189,7 @@ function BaseApp() {
     sourceMode: "real_tauri_local_text" | "real_tauri_local_file",
   ) => {
     setLifecycleState("reading_result");
+    setStatusDetailOverride(null);
     await wait(40);
     const lifecycle = createRunLifecycle(nextResult);
     setResult(nextResult);
@@ -180,15 +202,16 @@ function BaseApp() {
     );
     try {
       const lineageSnapshot = await baseBridgeClient.readLineageSnapshot();
-      setLineage(lineageSnapshot);
-      setRuntimeMode(baseBridgeClient.runtimeMode);
+      applyLineageSnapshot(lineageSnapshot);
     } catch {
       setRuntimeMode(sampleRuntimeMode);
     }
     const successful = lifecycle.classification === "success";
     setLifecycleState(successful ? "success" : "failed");
     setStatusContext(successful ? "real_success" : "real_failed");
-    setStatusErrorDetail(nextResult.error?.user_message ?? nextResult.error?.technical_detail_safe ?? null);
+    setStatusErrorDetail(
+      nextResult.error?.user_message ?? nextResult.error?.technical_detail_safe ?? null,
+    );
     setDisplayMode(sourceMode);
     setLastRealMode(sourceMode);
     setProofStatus("not_exported");
@@ -199,6 +222,7 @@ function BaseApp() {
   const loadSample = async (mode: "success" | "error") => {
     setLifecycleState("idle");
     setStatusErrorDetail(null);
+    setStatusDetailOverride(null);
     setProofStatus("not_exported");
     setProofPath(null);
     setProofErrorDetail(null);
@@ -207,7 +231,9 @@ function BaseApp() {
       const payload = await mockArtifactClient.loadSampleSuccess();
       setResult(payload.result);
       setEvidence(payload.evidence);
-      setOutputPlan(await mockArtifactClient.openOutputFolderPlan(payload.result.receipt.output_root));
+      setOutputPlan(
+        await mockArtifactClient.openOutputFolderPlan(payload.result.receipt.output_root),
+      );
       setDisplayMode("sample_success");
       setStatusContext("sample_success");
       return;
@@ -215,39 +241,85 @@ function BaseApp() {
     const payload = await mockArtifactClient.loadSampleError();
     setResult(payload.result);
     setEvidence(sampleErrorEvidence);
-    setOutputPlan(await mockArtifactClient.openOutputFolderPlan(payload.result.receipt.output_root));
+    setOutputPlan(
+      await mockArtifactClient.openOutputFolderPlan(payload.result.receipt.output_root),
+    );
     setDisplayMode("sample_error");
     setStatusContext("sample_error");
   };
 
-  const buildFailedResult = (requestId: string, message: string): BaseRunResultV1 => ({
+  const buildFailedResult = (
+    requestId: string,
+    userMessage: string,
+    technicalDetail: string,
+  ): BaseRunResultV1 => ({
     ...sampleErrorResult,
     request_id: requestId,
     error: {
       ...sampleErrorResult.error!,
-      technical_detail_safe: message,
-      user_message: message,
+      technical_detail_safe: technicalDetail,
+      user_message: userMessage,
     },
   });
 
+  const resolveFriendlyError = (technicalDetail: string) => {
+    if (technicalDetail.includes(RUNTIME_PREPARE_ERROR)) {
+      return {
+        userMessage: m.status.runtimePrepareFailedMessage,
+        technicalDetail,
+      };
+    }
+    return {
+      userMessage: technicalDetail,
+      technicalDetail,
+    };
+  };
+
+  const ensureRuntimeReady = async () => {
+    setLifecycleState("preparing_request");
+    setStatusDetailOverride(m.status.preparingRuntimeDetail);
+    await wait(40);
+    const prepared = await baseBridgeClient.prepareLocalRuntime();
+    const lineageSnapshot = await baseBridgeClient.readLineageSnapshot();
+    applyLineageSnapshot(lineageSnapshot);
+    if (
+      !prepared.managed_python_runtime_used ||
+      prepared.uses_current_python_environment ||
+      !prepared.managed_runtime_available
+    ) {
+      throw new Error(
+        `${RUNTIME_PREPARE_ERROR} Bridge selected ${prepared.selected_python_path} instead of the managed runtime.`,
+      );
+    }
+    setStatusDetailOverride(m.status.runtimeReadyDetail);
+    await wait(40);
+  };
+
   const handleRunText = async () => {
     setStatusErrorDetail(null);
-    setLifecycleState("preparing_request");
-    await wait(40);
-    setLifecycleState("invoking_tauri_command");
+    setStatusDetailOverride(null);
     try {
+      await ensureRuntimeReady();
+      setLifecycleState("invoking_tauri_command");
+      setStatusDetailOverride(null);
       await wait(40);
       setLifecycleState("processing_local_runtime");
       const nextResult = await baseBridgeClient.runLocalText(inlineText, TEXT_OUTPUT_DIR);
       await applyResult(nextResult, TEXT_OUTPUT_DIR, "real_tauri_local_text");
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      const failed = buildFailedResult("ui-real-run-text-failed", message);
+      const friendly = resolveFriendlyError(message);
+      const failed = buildFailedResult(
+        "ui-real-run-text-failed",
+        friendly.userMessage,
+        friendly.technicalDetail,
+      );
       setResult(failed);
       setEvidence(buildEvidenceFromRunResult(failed));
       setLifecycleState("failed");
       setStatusContext("real_failed");
-      setStatusErrorDetail(message);
+      setStatusErrorDetail(friendly.userMessage);
+      setStatusDetailOverride(null);
       setDisplayMode("real_tauri_local_text");
       setLastRealMode("real_tauri_local_text");
       setProofStatus("not_exported");
@@ -258,22 +330,29 @@ function BaseApp() {
 
   const handleRunFile = async () => {
     setStatusErrorDetail(null);
-    setLifecycleState("preparing_request");
-    await wait(40);
-    setLifecycleState("invoking_tauri_command");
+    setStatusDetailOverride(null);
     try {
+      await ensureRuntimeReady();
+      setLifecycleState("invoking_tauri_command");
+      setStatusDetailOverride(null);
       await wait(40);
       setLifecycleState("processing_local_runtime");
       const nextResult = await baseBridgeClient.runLocalFile(inputPath, FILE_OUTPUT_DIR);
       await applyResult(nextResult, FILE_OUTPUT_DIR, "real_tauri_local_file");
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      const failed = buildFailedResult("ui-real-run-file-failed", message);
+      const friendly = resolveFriendlyError(message);
+      const failed = buildFailedResult(
+        "ui-real-run-file-failed",
+        friendly.userMessage,
+        friendly.technicalDetail,
+      );
       setResult(failed);
       setEvidence(buildEvidenceFromRunResult(failed));
       setLifecycleState("failed");
       setStatusContext("real_failed");
-      setStatusErrorDetail(message);
+      setStatusErrorDetail(friendly.userMessage);
+      setStatusDetailOverride(null);
       setDisplayMode("real_tauri_local_file");
       setLastRealMode("real_tauri_local_file");
       setProofStatus("not_exported");
@@ -284,17 +363,21 @@ function BaseApp() {
 
   const handleReadLatest = async () => {
     setStatusErrorDetail(null);
+    setStatusDetailOverride(null);
     setLifecycleState("reading_result");
     try {
       const nextResult = await baseBridgeClient.readRunResult(lastOutputDir);
       const sourceMode =
-        displayMode === "real_tauri_local_file" ? "real_tauri_local_file" : "real_tauri_local_text";
+        displayMode === "real_tauri_local_file"
+          ? "real_tauri_local_file"
+          : "real_tauri_local_text";
       await applyResult(nextResult, lastOutputDir, sourceMode);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       setLifecycleState("failed");
       setStatusContext("read_failed");
       setStatusErrorDetail(message);
+      setStatusDetailOverride(null);
     }
   };
 

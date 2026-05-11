@@ -231,6 +231,10 @@ jobs:
         continue-on-error: true
         run: python scripts/run_external_package_runtime_smoke.py --package .tmp/windows_installer_package/ZephyrBase-windows-unsigned.zip --json
 
+      - name: Check external GUI runtime bootstrap
+        continue-on-error: true
+        run: python scripts/check_external_gui_runtime_bootstrap.py --json
+
       - name: Tauri window launch attempt
         continue-on-error: true
         run: python scripts/attempt_tauri_window_launch.py --json

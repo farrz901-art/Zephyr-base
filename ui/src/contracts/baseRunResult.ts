@@ -75,6 +75,10 @@ export interface BaseRunResultV1 {
   requires_p45_substrate?: boolean;
   content_evidence_kind?: string;
   fixture_runner_used?: boolean;
+  managed_runtime_available?: boolean;
+  managed_python_runtime_used?: boolean;
+  uses_current_python_environment?: boolean;
+  selected_python_path?: string;
 }
 
 export interface RunLocalFilePayload {
@@ -99,6 +103,22 @@ export interface InteractionProofWritePayload {
   outputDir: string;
   proof: InteractionProofV1;
   runResult: BaseRunResultV1;
+}
+
+export interface PrepareLocalRuntimeResult {
+  managed_runtime_created: boolean;
+  managed_runtime_available: boolean;
+  managed_python_runtime_used: boolean;
+  uses_current_python_environment: boolean;
+  selected_python_path: string;
+  wheelhouse_path: string;
+  requirements_path: string;
+  uses_no_index: boolean;
+  uses_find_links: boolean;
+  requires_network_for_dependency_install: boolean;
+  requires_network_at_runtime: boolean;
+  pointer_path: string;
+  package_ready_signal: string;
 }
 
 export interface InteractionProofWriteResult {
@@ -133,6 +153,9 @@ export interface RuntimeModeSummary {
   embedded_python_runtime: boolean;
   wheelhouse_bundled: boolean;
   installer_runtime_complete: boolean;
+  managed_runtime_available?: boolean;
+  managed_runtime_selected?: boolean;
+  selected_python_path?: string;
 }
 
 export interface ResultDisplayModel {

@@ -44,6 +44,9 @@ export interface UiMessages {
     failed: string;
     readyDetail: string;
     preparingDetail: string;
+    runtimePrepareFailedMessage: string;
+    preparingRuntimeDetail: string;
+    runtimeReadyDetail: string;
     invokingDetail: string;
     processingDetail: string;
     readingDetail: string;
@@ -205,6 +208,9 @@ export const messages: Record<Language, UiMessages> = {
       failed: "Failed",
       readyDetail: "Choose a local input and start a run.",
       preparingDetail: "Preparing your local request.",
+      runtimePrepareFailedMessage: "Local runtime could not be prepared.",
+      preparingRuntimeDetail: "Preparing the local runtime from the packaged wheelhouse.",
+      runtimeReadyDetail: "Local runtime is ready. Starting the local run.",
       invokingDetail: "Calling the desktop command bridge.",
       processingDetail: "Processing locally with the bundled adapter.",
       readingDetail: "Reading the latest local result.",
@@ -365,6 +371,9 @@ export const messages: Record<Language, UiMessages> = {
       failed: "失败",
       readyDetail: "选择本地输入后即可开始处理。",
       preparingDetail: "正在准备本地处理请求。",
+      runtimePrepareFailedMessage: "本地运行时准备失败。",
+      preparingRuntimeDetail: "正在从随包 wheelhouse 准备本地运行时。",
+      runtimeReadyDetail: "本地运行时已就绪，正在启动本地处理。",
       invokingDetail: "正在调用桌面命令桥接层。",
       processingDetail: "正在使用随包适配器进行本地处理。",
       readingDetail: "正在读取最近一次本地结果。",

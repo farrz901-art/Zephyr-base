@@ -5,6 +5,11 @@ use crate::errors::to_user_safe_string;
 use crate::lineage;
 
 #[tauri::command]
+pub fn prepare_local_runtime() -> Result<Value, String> {
+    bridge::prepare_local_runtime().map_err(to_user_safe_string)
+}
+
+#[tauri::command]
 pub fn run_local_file(input_path: String, output_dir: String) -> Result<Value, String> {
     bridge::invoke_local_file(&input_path, &output_dir).map_err(to_user_safe_string)
 }

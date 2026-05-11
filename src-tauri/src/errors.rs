@@ -42,13 +42,13 @@ impl BridgeError {
     pub fn user_safe_message(&self) -> &'static str {
         match self.kind {
             BridgeErrorKind::Input => "Base command bridge rejected the input.",
-            BridgeErrorKind::Dependency => {
-                "Base command bridge is missing a required local dependency."
-            }
+            BridgeErrorKind::Dependency => "Local runtime could not be prepared.",
             BridgeErrorKind::Processing => {
                 "Base command bridge could not complete the bundled public-core run."
             }
-            BridgeErrorKind::Lineage => "Base command bridge could not read local lineage metadata.",
+            BridgeErrorKind::Lineage => {
+                "Base command bridge could not read local lineage metadata."
+            }
         }
     }
 
