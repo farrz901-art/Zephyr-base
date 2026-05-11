@@ -3,15 +3,17 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import platform
 import shutil
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 
 
-TEXT_MARKER = "ZEPHYR_BASE_S15_INSTALL_SMOKE_TEXT_MARKER"
-FILE_MARKER = "ZEPHYR_BASE_S15_INSTALL_SMOKE_FILE_MARKER"
+DEFAULT_PACKAGE = Path(".tmp/windows_installer_package/ZephyrBase-windows-unsigned.zip")
+DEFAULT_EXTRACT_ROOT = Path(".tmp/external_package_runtime_smoke")
+TEXT_MARKER = "ZEPHYR_BASE_S17_EXTERNAL_PACKAGE_TEXT_MARKER"
+FILE_MARKER = "ZEPHYR_BASE_S17_EXTERNAL_PACKAGE_FILE_MARKER"
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> None:
@@ -69,7 +71,7 @@ def _request_payload(
 
 def _run_flow(
     *,
-    root: Path,
+    package_root: Path,
     managed_python: Path,
     request_payload: dict[str, object],
     request_path: Path,
@@ -82,16 +84,16 @@ def _run_flow(
     completed = _run(
         [
             str(managed_python),
-            str(root / "public-core-bridge/run_public_core_adapter.py"),
+            str(package_root / "public-core-bridge/run_public_core_adapter.py"),
             "--request",
             str(request_path),
             "--out-dir",
             str(output_dir),
             "--bundle-root",
-            str(root / "runtime/public-core-bundle"),
+            str(package_root / "runtime/public-core-bundle"),
             "--json",
         ],
-        root,
+        package_root,
     )
     run_result_path = output_dir / "run_result.json"
     run_result = _read_json(run_result_path) if run_result_path.exists() else {}
@@ -120,23 +122,32 @@ def _run_flow(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run Windows install-root smoke from the packaged Zephyr Base payload.")
+    parser = argparse.ArgumentParser(description="Run the S17 external package runtime smoke from an extracted portable package.")
+    parser.add_argument("--package", type=Path, default=DEFAULT_PACKAGE)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
     root = Path(__file__).resolve().parents[1]
-    wheelhouse_root = root / "runtime/wheelhouse"
-    requirements_path = root / "runtime/python-runtime/base-runtime-requirements.txt"
-    proof_root = root / "proof"
-    runtime_root = root / ".runtime/base_runtime_venv"
-    manifest_path = root / "manifests/installer_manifest.json"
-    manifest = _read_json(manifest_path) if manifest_path.exists() else {}
+    package_path = args.package if args.package.is_absolute() else (root / args.package).resolve()
+    if not package_path.exists():
+        raise FileNotFoundError(package_path)
 
-    if runtime_root.exists():
-        shutil.rmtree(runtime_root)
-    create_completed = _run([sys.executable, "-m", "venv", str(runtime_root)], root)
+    extract_root = (root / DEFAULT_EXTRACT_ROOT).resolve()
+    if extract_root.exists():
+        shutil.rmtree(extract_root)
+    extract_root.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(package_path) as archive:
+        archive.extractall(extract_root)
+
+    package_root = extract_root / "ZephyrBase"
+    runtime_root = package_root / ".runtime/base_runtime_venv"
+    wheelhouse_root = package_root / "runtime/wheelhouse"
+    requirements_path = package_root / "runtime/python-runtime/base-runtime-requirements.txt"
+    proof_root = package_root / "proof"
+
+    create_completed = _run([sys.executable, "-m", "venv", str(runtime_root)], package_root)
     managed_python = _venv_python(runtime_root)
-    ensure_pip = _ensure_pip(managed_python, root) if create_completed.returncode == 0 else None
+    ensure_pip = _ensure_pip(managed_python, package_root) if create_completed.returncode == 0 else None
     install_completed = (
         _run(
             [
@@ -150,20 +161,18 @@ def main(argv: list[str] | None = None) -> int:
                 "-r",
                 str(requirements_path),
             ],
-            root,
+            package_root,
         )
         if create_completed.returncode == 0 and ensure_pip is not None and ensure_pip.returncode == 0
         else None
     )
 
-    proof_input_dir = proof_root / "input"
-    proof_input_dir.mkdir(parents=True, exist_ok=True)
-    sample_input = proof_input_dir / "sample_windows_install.txt"
-    sample_input.write_text(f"Windows installer smoke\n\n{FILE_MARKER}\n", encoding="utf-8")
+    input_dir = proof_root / "input"
+    input_dir.mkdir(parents=True, exist_ok=True)
+    sample_file = input_dir / "external_package_sample.txt"
+    sample_file.write_text(f"External package file smoke\n\n{FILE_MARKER}\n", encoding="utf-8")
 
-    text_output_dir = proof_root / "windows_install_text"
-    file_output_dir = proof_root / "windows_install_file"
-    text_flow = {
+    base_flow = {
         "pass": False,
         "run_result_exists": False,
         "marker_found": False,
@@ -174,69 +183,57 @@ def main(argv: list[str] | None = None) -> int:
         "requires_network": None,
         "requires_p45_substrate": None,
     }
-    file_flow = dict(text_flow)
+    text_flow = dict(base_flow)
+    file_flow = dict(base_flow)
     text_completed = None
     file_completed = None
     if install_completed is not None and install_completed.returncode == 0:
         text_completed, text_flow = _run_flow(
-            root=root,
+            package_root=package_root,
             managed_python=managed_python,
             request_payload=_request_payload(
-                request_id="s15-install-text",
-                output_dir=text_output_dir,
-                inline_text=f"Windows installer text smoke\n\n{TEXT_MARKER}\n",
+                request_id="s17-external-package-text",
+                output_dir=proof_root / "external_package_text",
+                inline_text=f"External package text smoke\n\n{TEXT_MARKER}\n",
             ),
-            request_path=root / ".tmp/s15_install_text_request.json",
-            output_dir=text_output_dir,
+            request_path=package_root / ".tmp/s17_external_package_text_request.json",
+            output_dir=proof_root / "external_package_text",
             marker=TEXT_MARKER,
         )
         file_completed, file_flow = _run_flow(
-            root=root,
+            package_root=package_root,
             managed_python=managed_python,
             request_payload=_request_payload(
-                request_id="s15-install-file",
-                output_dir=file_output_dir,
-                input_path=sample_input,
+                request_id="s17-external-package-file",
+                output_dir=proof_root / "external_package_file",
+                input_path=sample_file,
             ),
-            request_path=root / ".tmp/s15_install_file_request.json",
-            output_dir=file_output_dir,
+            request_path=package_root / ".tmp/s17_external_package_file_request.json",
+            output_dir=proof_root / "external_package_file",
             marker=FILE_MARKER,
         )
 
-    proof = {
+    passed = bool(text_flow["pass"] and file_flow["pass"])
+    report = {
         "schema_version": 1,
-        "report_id": "zephyr.base.s15.windows_install_proof.v1",
-        "package_kind": manifest.get("package_kind", "portable_zip"),
-        "machine": {
-            "os": platform.platform(),
-            "python": sys.executable,
-            "node_available": shutil.which("node") is not None,
-            "cargo_available": shutil.which("cargo") is not None,
-            "git_available": shutil.which("git") is not None,
+        "report_id": "zephyr.base.s17.external_package_runtime_smoke.v1",
+        "summary": {
+            "pass": passed,
+            "external_runtime_smoke_pass": passed,
+            "package_path": str(package_path),
+            "extract_root": str(package_root),
         },
-        "runtime": {
-            "managed_python": str(managed_python),
-            "managed_runtime_created": create_completed.returncode == 0,
-            "uses_current_shell_python_for_execution": False,
-            "embedded_python_runtime": False,
-            "wheelhouse_bundled": True,
-            "installer_runtime_complete": "partial",
-        },
-        "offline_install": {
-            "uses_no_index": True,
-            "uses_find_links": True,
-            "requires_network_for_dependency_install": False,
-            "requires_network_at_runtime": False,
-        },
+        "selected_python": str(managed_python),
+        "uses_wheelhouse": True,
+        "uses_no_index": True,
+        "uses_find_links": True,
         "text_flow": text_flow,
         "file_flow": file_flow,
-        "scope": {
-            "installer_built": True,
-            "release_created": False,
-            "signed_installer": False,
-            "embedded_python_runtime": False,
-            "wheelhouse_bundled": True,
-            "install_smoke_pass": bool(text_flow["pass"] and file_flow["pass"]),
+        "runtime": {
+            "managed_runtime_created": create_completed.returncode == 0,
+            "uses_current_shell_python_for_execution": False,
+            "requires_network_for_dependency_install": False,
+            "requires_network_at_runtime": False,
         },
         "create_venv": {
             "returncode": create_completed.returncode,
@@ -264,12 +261,11 @@ def main(argv: list[str] | None = None) -> int:
             "stderr": file_completed.stderr.strip() if file_completed is not None else "",
         },
     }
-    _write_json(proof_root / "windows_install_proof.json", proof)
+    _write_json(root / ".tmp/external_package_runtime_smoke_report.json", report)
     if args.json:
-        print(json.dumps(proof, ensure_ascii=False, indent=2))
-    return 0 if proof["scope"]["install_smoke_pass"] else 1
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    return 0 if passed else 1
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

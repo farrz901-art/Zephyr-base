@@ -79,6 +79,12 @@ jobs:
       - name: Manual Base UX smoke doc exists
         run: Test-Path docs/MANUAL_BASE_UX_SMOKE.md
 
+      - name: Base external UX smoke policy exists
+        run: Test-Path docs/BASE_EXTERNAL_UX_SMOKE_POLICY.md
+
+      - name: Manual external package UX proof doc exists
+        run: Test-Path docs/MANUAL_EXTERNAL_PACKAGE_UX_PROOF.md
+
       - name: Windows packaging readme exists
         run: Test-Path packaging/windows/README.md
 
@@ -123,6 +129,9 @@ jobs:
 
       - name: Base UX shell check
         run: python scripts/check_base_ux_shell.py --json
+
+      - name: External package UX baseline check
+        run: python scripts/check_external_package_ux_baseline.py --json
 
       - name: UI result lifecycle check
         run: python scripts/check_ui_result_lifecycle.py --json
@@ -213,6 +222,14 @@ jobs:
       - name: Run unsigned Windows install smoke
         continue-on-error: true
         run: python scripts/run_windows_install_smoke.py --package .tmp/windows_installer_package/ZephyrBase-windows-unsigned.zip --json
+
+      - name: Build external package UX proof pack
+        continue-on-error: true
+        run: python scripts/build_external_package_ux_proof_pack.py --json
+
+      - name: Run external package runtime smoke
+        continue-on-error: true
+        run: python scripts/run_external_package_runtime_smoke.py --package .tmp/windows_installer_package/ZephyrBase-windows-unsigned.zip --json
 
       - name: Tauri window launch attempt
         continue-on-error: true
