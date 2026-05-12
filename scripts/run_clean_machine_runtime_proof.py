@@ -9,6 +9,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from marker_detection import build_long_marker_text, detect_marker_in_output
+
 
 TEXT_MARKER = "ZEPHYR_BASE_S13_CLEAN_MACHINE_TEXT_MARKER"
 FILE_MARKER = "ZEPHYR_BASE_S13_CLEAN_MACHINE_FILE_MARKER"
@@ -72,10 +74,15 @@ def _run_flow(*, root: Path, managed_python: Path, request_payload: dict[str, ob
     usage_fact = run_result.get("usage_fact", {}) if isinstance(run_result, dict) else {}
     if not isinstance(usage_fact, dict):
         usage_fact = {}
+    marker_report = detect_marker_in_output(
+        output_dir=output_dir,
+        run_result=run_result,
+        marker=marker,
+    )
     return completed, {
         "pass": completed.returncode == 0
         and run_result_path.exists()
-        and marker in str(run_result.get("normalized_text_preview", ""))
+        and marker_report["marker_found"] is True
         and usage_fact.get("billing_semantics") is False
         and run_result.get("bundled_runtime_used") is True
         and run_result.get("fixture_runner_used") is False
@@ -83,7 +90,7 @@ def _run_flow(*, root: Path, managed_python: Path, request_payload: dict[str, ob
         and run_result.get("requires_network") is False
         and run_result.get("requires_p45_substrate") is False,
         "run_result_exists": run_result_path.exists(),
-        "marker_found": marker in str(run_result.get("normalized_text_preview", "")),
+        **marker_report,
         "billing_semantics": usage_fact.get("billing_semantics"),
         "bundled_runtime_used": run_result.get("bundled_runtime_used"),
         "fixture_runner_used": run_result.get("fixture_runner_used"),
@@ -117,7 +124,7 @@ def main(argv: list[str] | None = None) -> int:
     proof_input_dir = proof_root / "input"
     proof_input_dir.mkdir(parents=True, exist_ok=True)
     sample_file = proof_input_dir / "sample_clean_machine.txt"
-    sample_file.write_text(f"Clean machine proof\n\n{FILE_MARKER}\n", encoding="utf-8")
+    sample_file.write_text(build_long_marker_text(FILE_MARKER, "Clean machine file proof"), encoding="utf-8")
 
     text_request_path = root / ".tmp/s13_clean_machine_text_request.json"
     file_request_path = root / ".tmp/s13_clean_machine_file_request.json"
@@ -127,7 +134,7 @@ def main(argv: list[str] | None = None) -> int:
         request_payload=_request_payload(
             request_id="s13-clean-machine-text",
             output_dir=text_output_dir,
-            inline_text=TEXT_MARKER,
+                inline_text=build_long_marker_text(TEXT_MARKER, "Clean machine text proof"),
         ),
         request_path=text_request_path,
         output_dir=text_output_dir,

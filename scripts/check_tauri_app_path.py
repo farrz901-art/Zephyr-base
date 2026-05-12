@@ -6,6 +6,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from marker_detection import build_long_marker_text, detect_marker_in_output
+
 MARKER = "ZEPHYR_BASE_S9_TAURI_APP_PATH_MARKER"
 OUTPUT_DIR = Path(".tmp/s9_tauri_app_path")
 
@@ -83,7 +85,7 @@ def main(argv: list[str] | None = None) -> int:
                 "src-tauri/Cargo.toml",
                 "--",
                 "run-local-text",
-                MARKER,
+                build_long_marker_text(MARKER, "Tauri app path smoke"),
                 OUTPUT_DIR.as_posix(),
             ],
             root,
@@ -104,7 +106,8 @@ def main(argv: list[str] | None = None) -> int:
     if not isinstance(usage_fact, dict):
         usage_fact = {}
 
-    marker_found = MARKER in str(run_result.get("normalized_text_preview", ""))
+    marker_report = detect_marker_in_output(output_dir=output_dir, run_result=run_result, marker=MARKER)
+    marker_found = marker_report["marker_found"] is True
     rust_cli_lifecycle_pass = all(
         (
             cargo_available,
@@ -154,7 +157,7 @@ def main(argv: list[str] | None = None) -> int:
             "launch_reason": launch_report.get("launch", {}).get("reason") if isinstance(launch_report.get("launch"), dict) else None,
         },
         "local_run_lifecycle": {
-            "marker_found": marker_found,
+            **marker_report,
             "run_result_exists": run_result_path.exists(),
             "billing_semantics": usage_fact.get("billing_semantics"),
             "bundled_runtime_used": run_result.get("bundled_runtime_used"),

@@ -98,7 +98,11 @@ export function buildEvidenceFromRunResult(result: BaseRunResultV1): BaseContent
     normalized_text_preview: result.normalized_text_preview,
     source_kind: "local_artifact",
     elements_count: result.content_evidence_summary.elements_count,
-    token_marker_found: result.normalized_text_preview.includes("ZEPHYR_BASE"),
+    token_marker_found:
+      result.token_marker_found ??
+      result.full_text_marker_found ??
+      result.preview_marker_found ??
+      result.normalized_text_preview.includes("ZEPHYR_BASE"),
     bundled_runtime_used: result.bundled_runtime_used,
     zephyr_dev_working_tree_required: result.zephyr_dev_working_tree_required,
     installer_runtime_complete: result.installer_runtime_complete,

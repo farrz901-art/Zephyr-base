@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from marker_detection import build_long_marker_text, detect_marker_in_output
+
 MARKER = "ZEPHYR_BASE_S11_MANAGED_RUNTIME_MARKER"
 OUTPUT_DIR = Path(".tmp/s11_managed_runtime_flow")
 DEFAULT_MANAGED_VENV = Path(".tmp/base_runtime_venv")
@@ -109,7 +111,7 @@ def main(argv: list[str] | None = None) -> int:
         if lineage_read_pass and lineage_completed.stdout.strip():
             lineage = json.loads(lineage_completed.stdout)
         run_completed = _run(
-            [cargo, "run", "--manifest-path", "src-tauri/Cargo.toml", "--", "run-local-text", MARKER, OUTPUT_DIR.as_posix()],
+            [cargo, "run", "--manifest-path", "src-tauri/Cargo.toml", "--", "run-local-text", build_long_marker_text(MARKER, "Managed runtime flow"), OUTPUT_DIR.as_posix()],
             root,
             env=env,
         )
@@ -126,7 +128,8 @@ def main(argv: list[str] | None = None) -> int:
     selected_python_path = lineage.get("selected_python_path") if isinstance(lineage, dict) else None
     selected_python_is_managed_runtime = bool(lineage.get("managed_python_runtime_used")) if isinstance(lineage, dict) else False
     uses_current_shell_python = bool(lineage.get("uses_current_python_environment")) if isinstance(lineage, dict) else True
-    marker_found = MARKER in str(run_result.get("normalized_text_preview", ""))
+    marker_report = detect_marker_in_output(output_dir=output_dir, run_result=run_result, marker=MARKER)
+    marker_found = marker_report["marker_found"] is True
     run_result_exists = (output_dir / "run_result.json").exists()
 
     passed = all((
@@ -173,7 +176,7 @@ def main(argv: list[str] | None = None) -> int:
         },
         "evidence": {
             "run_result_exists": run_result_exists,
-            "marker_found": marker_found,
+            **marker_report,
             "billing_semantics": usage_fact.get("billing_semantics"),
             "bundled_runtime_used": run_result.get("bundled_runtime_used"),
             "fixture_runner_used": run_result.get("fixture_runner_used"),

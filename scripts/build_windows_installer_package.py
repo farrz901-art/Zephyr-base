@@ -92,6 +92,7 @@ def main(argv: list[str] | None = None) -> int:
     shutil.copy2(root / "scripts/validate_windows_package_install_proof.py", install_root / "checks/validate_windows_package_install_proof.py")
     shutil.copy2(root / "scripts/run_offline_runtime_proof.py", install_root / "checks/run_offline_runtime_proof.py")
     shutil.copy2(root / "scripts/validate_offline_runtime_proof.py", install_root / "checks/validate_offline_runtime_proof.py")
+    shutil.copy2(root / "scripts/marker_detection.py", install_root / "checks/marker_detection.py")
     shutil.copy2(root / "docs/WINDOWS_INSTALLER_PACKAGING_POLICY.md", install_root / "docs/WINDOWS_INSTALLER_PACKAGING_POLICY.md")
     shutil.copy2(root / "packaging/windows/README.md", install_root / "docs/WINDOWS_PACKAGING_README.md")
 

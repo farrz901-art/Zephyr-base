@@ -75,6 +75,9 @@ export interface BaseRunResultV1 {
   requires_p45_substrate?: boolean;
   content_evidence_kind?: string;
   fixture_runner_used?: boolean;
+  token_marker_found?: boolean;
+  preview_marker_found?: boolean;
+  full_text_marker_found?: boolean;
   managed_runtime_available?: boolean;
   managed_python_runtime_used?: boolean;
   uses_current_python_environment?: boolean;

@@ -4,6 +4,8 @@ import argparse
 import json
 from pathlib import Path
 
+from marker_detection import detect_marker_in_output
+
 OUTPUT_ROOT = Path(".tmp/s10_tauri_window_interaction")
 PROOF_NAME = "ui_interaction_proof.json"
 RUN_RESULT_NAME = "run_result.json"
@@ -36,8 +38,8 @@ def main(argv: list[str] | None = None) -> int:
         usage_fact = {}
 
     marker = str(proof.get("marker", ""))
-    normalized_preview = str(run_result.get("normalized_text_preview", ""))
-    marker_found = bool(marker) and marker in normalized_preview
+    marker_report = detect_marker_in_output(output_dir=root / OUTPUT_ROOT, run_result=run_result, marker=marker)
+    marker_found = marker_report["marker_found"] is True
 
     pass_checks = all(
         (
@@ -75,6 +77,7 @@ def main(argv: list[str] | None = None) -> int:
             "marker_found": marker_found,
         },
         "proof": proof,
+        "marker_detection": marker_report,
         "run_result_path": run_result_path.as_posix(),
     }
     out_path = root / ".tmp" / "tauri_window_interaction_proof_check.json"

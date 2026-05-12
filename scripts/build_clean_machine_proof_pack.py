@@ -126,6 +126,7 @@ def main(argv: list[str] | None = None) -> int:
 
     shutil.copy2(root / "scripts/run_clean_machine_runtime_proof.py", proof_layout_root / "checks/run_clean_machine_runtime_proof.py")
     shutil.copy2(root / "scripts/validate_clean_machine_runtime_proof.py", proof_layout_root / "checks/validate_clean_machine_runtime_proof.py")
+    shutil.copy2(root / "scripts/marker_detection.py", proof_layout_root / "checks/marker_detection.py")
     (proof_layout_root / "CLEAN_MACHINE_README.md").write_text(
         "Run `python checks/run_clean_machine_runtime_proof.py --json` and then `python checks/validate_clean_machine_runtime_proof.py --json` from this directory.\n",
         encoding="utf-8",

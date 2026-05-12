@@ -6,6 +6,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from marker_detection import build_long_marker_text, detect_marker_in_output
+
 MARKER = "ZEPHYR_BASE_S8_TAURI_BRIDGE_MARKER"
 OUTPUT_DIR = Path(".tmp/s8_tauri_bridge_cli_flow")
 REPORT_PATH = Path(".tmp/s8_tauri_bridge_cli_flow_check.json")
@@ -43,7 +45,7 @@ def _cargo_run(root: Path, output_dir: Path) -> tuple[bool, str, str]:
             "src-tauri/Cargo.toml",
             "--",
             "run-local-text",
-            MARKER,
+            build_long_marker_text(MARKER, "Rust bridge CLI flow"),
             output_dir.as_posix(),
         ],
         cwd=root,
@@ -76,7 +78,8 @@ def main(argv: list[str] | None = None) -> int:
         if run_result_path.exists():
             run_result = json.loads(run_result_path.read_text(encoding="utf-8"))
 
-    marker_found = MARKER in str(run_result.get("normalized_text_preview", ""))
+    marker_report = detect_marker_in_output(output_dir=output_dir, run_result=run_result, marker=MARKER)
+    marker_found = marker_report["marker_found"] is True
     usage_fact = run_result.get("usage_fact", {}) if isinstance(run_result, dict) else {}
     if not isinstance(usage_fact, dict):
         usage_fact = {}
@@ -120,6 +123,7 @@ def main(argv: list[str] | None = None) -> int:
             "run_stdout": stdout_text,
             "run_stderr": stderr_text,
         },
+        "marker_detection": marker_report,
         "receipt": receipt,
         "run_result_path": run_result_path.as_posix(),
     }

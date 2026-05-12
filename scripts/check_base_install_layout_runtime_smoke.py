@@ -7,6 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from marker_detection import build_long_marker_text, detect_marker_in_output
+
 
 DEFAULT_LAYOUT_ROOT = Path(".tmp/base_install_layout/ZephyrBase")
 MARKER = "ZEPHYR_BASE_S12_INSTALL_LAYOUT_MARKER"
@@ -63,7 +65,7 @@ def main(argv: list[str] | None = None) -> int:
         "schema_version": 1,
         "request_id": "s12-install-layout-runtime-smoke",
         "input_kind": "local_text",
-        "inline_text": MARKER,
+        "inline_text": build_long_marker_text(MARKER, "Install layout runtime smoke"),
         "output_dir": str(output_dir),
         "requested_outputs": [
             "normalized_text",
@@ -101,6 +103,7 @@ def main(argv: list[str] | None = None) -> int:
     usage_fact = run_result.get("usage_fact", {}) if isinstance(run_result, dict) else {}
     if not isinstance(usage_fact, dict):
         usage_fact = {}
+    marker_report = detect_marker_in_output(output_dir=output_dir, run_result=run_result, marker=MARKER)
     report = {
         "schema_version": 1,
         "report_id": "zephyr.base.s12.install_layout_runtime_smoke.v1",
@@ -111,7 +114,7 @@ def main(argv: list[str] | None = None) -> int:
             and run_completed is not None
             and run_completed.returncode == 0
             and run_result_path.exists()
-            and MARKER in str(run_result.get("normalized_text_preview", ""))
+            and marker_report["marker_found"] is True
             and usage_fact.get("billing_semantics") is False
             and run_result.get("bundled_runtime_used") is True
             and run_result.get("fixture_runner_used") is False
@@ -131,7 +134,7 @@ def main(argv: list[str] | None = None) -> int:
         },
         "evidence": {
             "run_result_exists": run_result_path.exists(),
-            "marker_found": MARKER in str(run_result.get("normalized_text_preview", "")),
+            **marker_report,
             "billing_semantics": usage_fact.get("billing_semantics"),
             "bundled_runtime_used": run_result.get("bundled_runtime_used"),
             "fixture_runner_used": run_result.get("fixture_runner_used"),

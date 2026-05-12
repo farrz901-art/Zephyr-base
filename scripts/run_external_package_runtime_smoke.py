@@ -9,6 +9,8 @@ import sys
 import zipfile
 from pathlib import Path
 
+from marker_detection import build_long_marker_text, detect_marker_in_output
+
 
 DEFAULT_PACKAGE = Path(".tmp/windows_installer_package/ZephyrBase-windows-unsigned.zip")
 DEFAULT_EXTRACT_ROOT = Path(".tmp/external_package_runtime_smoke")
@@ -100,10 +102,15 @@ def _run_flow(
     usage_fact = run_result.get("usage_fact", {}) if isinstance(run_result, dict) else {}
     if not isinstance(usage_fact, dict):
         usage_fact = {}
+    marker_report = detect_marker_in_output(
+        output_dir=output_dir,
+        run_result=run_result,
+        marker=marker,
+    )
     return completed, {
         "pass": completed.returncode == 0
         and run_result_path.exists()
-        and marker in str(run_result.get("normalized_text_preview", ""))
+        and marker_report["marker_found"] is True
         and usage_fact.get("billing_semantics") is False
         and run_result.get("bundled_runtime_used") is True
         and run_result.get("fixture_runner_used") is False
@@ -111,7 +118,7 @@ def _run_flow(
         and run_result.get("requires_network") is False
         and run_result.get("requires_p45_substrate") is False,
         "run_result_exists": run_result_path.exists(),
-        "marker_found": marker in str(run_result.get("normalized_text_preview", "")),
+        **marker_report,
         "billing_semantics": usage_fact.get("billing_semantics"),
         "bundled_runtime_used": run_result.get("bundled_runtime_used"),
         "fixture_runner_used": run_result.get("fixture_runner_used"),
@@ -170,12 +177,17 @@ def main(argv: list[str] | None = None) -> int:
     input_dir = proof_root / "input"
     input_dir.mkdir(parents=True, exist_ok=True)
     sample_file = input_dir / "external_package_sample.txt"
-    sample_file.write_text(f"External package file smoke\n\n{FILE_MARKER}\n", encoding="utf-8")
+    sample_file.write_text(build_long_marker_text(FILE_MARKER, "External package file smoke"), encoding="utf-8")
 
     base_flow = {
         "pass": False,
         "run_result_exists": False,
+        "preview_marker_found": False,
+        "full_text_marker_found": False,
         "marker_found": False,
+        "processing_success": False,
+        "marker_detection_failed": False,
+        "normalized_text_exists": False,
         "billing_semantics": None,
         "bundled_runtime_used": None,
         "fixture_runner_used": None,
@@ -194,7 +206,7 @@ def main(argv: list[str] | None = None) -> int:
             request_payload=_request_payload(
                 request_id="s17-external-package-text",
                 output_dir=proof_root / "external_package_text",
-                inline_text=f"External package text smoke\n\n{TEXT_MARKER}\n",
+                inline_text=build_long_marker_text(TEXT_MARKER, "External package text smoke"),
             ),
             request_path=package_root / ".tmp/s17_external_package_text_request.json",
             output_dir=proof_root / "external_package_text",

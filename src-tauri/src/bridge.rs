@@ -20,6 +20,7 @@ const PACKAGE_WHEELHOUSE: &str = "runtime/wheelhouse";
 const REPO_WHEELHOUSE: &str = ".tmp/base_runtime_wheelhouse";
 const REQUIREMENTS_FILE: &str = "runtime/python-runtime/base-runtime-requirements.txt";
 const PACKAGE_READY_SIGNAL: &str = "Local runtime is ready.";
+const NORMALIZED_TEXT_NAME: &str = "normalized_text.txt";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AdapterInvocation {
@@ -535,6 +536,26 @@ fn read_json_file(path: &Path) -> Result<Value, BridgeError> {
     })
 }
 
+fn augment_run_result_marker_fields(output_dir: &Path, run_result: &mut Value) {
+    let preview = run_result
+        .get("normalized_text_preview")
+        .and_then(Value::as_str)
+        .unwrap_or("");
+    let preview_marker_found = preview.contains("ZEPHYR_BASE");
+    let normalized_path = output_dir.join(NORMALIZED_TEXT_NAME);
+    let full_text_marker_found = fs::read(&normalized_path)
+        .map(|bytes| String::from_utf8_lossy(&bytes).contains("ZEPHYR_BASE"))
+        .unwrap_or(false);
+    if let Some(map) = run_result.as_object_mut() {
+        map.insert("preview_marker_found".to_string(), json!(preview_marker_found));
+        map.insert("full_text_marker_found".to_string(), json!(full_text_marker_found));
+        map.insert(
+            "token_marker_found".to_string(),
+            json!(preview_marker_found || full_text_marker_found),
+        );
+    }
+}
+
 pub fn read_run_result_from_path(output_dir: &Path) -> Result<Value, BridgeError> {
     let run_result_path = output_dir.join(RUN_RESULT_NAME);
     if !run_result_path.exists() {
@@ -543,7 +564,9 @@ pub fn read_run_result_from_path(output_dir: &Path) -> Result<Value, BridgeError
             run_result_path.display()
         )));
     }
-    read_json_file(&run_result_path)
+    let mut run_result = read_json_file(&run_result_path)?;
+    augment_run_result_marker_fields(output_dir, &mut run_result);
+    Ok(run_result)
 }
 
 fn invoke_request(app_root: &Path, request: &Value, output_dir: &Path) -> Result<Value, BridgeError> {

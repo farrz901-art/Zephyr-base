@@ -90,6 +90,7 @@ def main(argv: list[str] | None = None) -> int:
     shutil.copy2(root / "scripts/bootstrap_base_runtime.py", checks_root / "bootstrap_base_runtime.py")
     shutil.copy2(root / "scripts/check_python_runtime_dependencies.py", checks_root / "check_python_runtime_dependencies.py")
     shutil.copy2(root / "scripts/check_managed_runtime_flow.py", checks_root / "check_managed_runtime_flow.py")
+    shutil.copy2(root / "scripts/marker_detection.py", checks_root / "marker_detection.py")
 
     (app_root / "zephyr-base-app-placeholder.txt").write_text(
         "Visible app executable is not bundled in S12. This layout is an installer precursor with UI dist and runtime assets only.\n",

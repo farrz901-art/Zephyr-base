@@ -84,6 +84,7 @@ def main(argv: list[str] | None = None) -> int:
     (proof_layout_root / "proof").mkdir(parents=True, exist_ok=True)
     shutil.copy2(root / "scripts/run_offline_runtime_proof.py", proof_layout_root / "checks/run_offline_runtime_proof.py")
     shutil.copy2(root / "scripts/validate_offline_runtime_proof.py", proof_layout_root / "checks/validate_offline_runtime_proof.py")
+    shutil.copy2(root / "scripts/marker_detection.py", proof_layout_root / "checks/marker_detection.py")
     (proof_layout_root / "OFFLINE_RUNTIME_README.md").write_text(
         "Run `python checks/run_offline_runtime_proof.py --json` and then `python checks/validate_offline_runtime_proof.py --json` from this directory.\n",
         encoding="utf-8",
