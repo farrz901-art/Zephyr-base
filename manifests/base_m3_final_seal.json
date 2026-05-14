@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "report_id": "zephyr.base.m3.final_seal.v1",
+  "summary": {
+    "p6_m3_final_status": "sealed",
+    "go": true,
+    "active_blockers": 0,
+    "major_gaps": 0,
+    "allowed_next_phase": "P6-M4"
+  },
+  "zephyr_base": {
+    "base_head_sha": "cfd9c0b6d87177a4984335f748ede695ac974e81",
+    "pushed": true
+  },
+  "proof_reuse": {
+    "s17_external_user_proof_reused": true,
+    "s17_external_user_proof_pass": true,
+    "s18_closure_audit_pass": true,
+    "manual_gui_retest_required": false,
+    "reason": "S17 already covered the external user path and S18 did not change runtime/UI/product logic."
+  },
+  "delivery": {
+    "artifact_kind": "unsigned_portable_zip_preview",
+    "recommended_filename": "ZephyrBase-windows-unsigned.zip",
+    "recommended_hosting": "GitHub Release or repository artifact",
+    "website_strategy": "Site links to GitHub Release",
+    "paid_cdn_required": false,
+    "controlled_download_required": false
+  },
+  "scope": {
+    "signed_installer": false,
+    "official_release": false,
+    "release_created": false,
+    "auto_update": false,
+    "embedded_python_runtime": false,
+    "runtime_capability_changed": false
+  },
+  "capability": {
+    "local_text": true,
+    "local_file": true,
+    "supported_formats": [".txt", ".text", ".log", ".md", ".markdown"],
+    "pdf": false,
+    "docx": false,
+    "image_or_ocr": false,
+    "html": false,
+    "cloud": false,
+    "pro": false,
+    "license_or_entitlement": false,
+    "payment_or_billing": false
+  },
+  "deferred": {
+    "p6_m8": [
+      "signed installer",
+      "official release signing pipeline",
+      "auto update manifest",
+      "controlled download hard gates"
+    ],
+    "post_m3_core": [
+      "future unstructured upgrade",
+      "future HTML hardening"
+    ]
+  }
+}
