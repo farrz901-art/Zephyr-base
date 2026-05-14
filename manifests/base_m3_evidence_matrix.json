@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "report_id": "zephyr.base.m3.evidence_matrix.v1",
+  "entries": [
+    {
+      "name": "repo scaffold",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s1_base_scaffold_handoff/report.json",
+      "current_limitation": "Historical scaffold step, not re-opened in S18",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "public boundary",
+      "status": "pass",
+      "evidence_path": ".tmp/base_boundary_check.json",
+      "current_limitation": "Boundary remains static-policy based",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "lineage",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s3_base_bridge_handoff/report.json",
+      "current_limitation": "Lineage remains technical, not user-facing",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "fixture bridge",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s3_base_bridge_handoff/report.json",
+      "current_limitation": "Historical bridge proof retained for traceability",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "real public-core adapter",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s4_base_real_adapter_handoff/report.json",
+      "current_limitation": "Adapter remains bounded to Base formats",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "bundled runtime",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s5r_bundle_surface_handoff/report.json",
+      "current_limitation": "Not embedded Python",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "bundle surface hardening",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s5r_bundle_surface_handoff/report.json",
+      "current_limitation": "Surface remains intentionally narrow",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "Tauri/Rust bridge",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s6_tauri_bridge_handoff/report.json",
+      "current_limitation": "No signed installer claim",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "UI shell",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s7_base_ui_handoff/report.json",
+      "current_limitation": "Base scope only",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "UI invoke",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s8_ui_invoke_handoff/report.json",
+      "current_limitation": "Contract remains camelCase invoke only",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "visible app path",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s9_tauri_app_flow_handoff/report.json",
+      "current_limitation": "App path proof does not imply signed distribution",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "manual window proof",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s10_window_interaction_handoff/report.json",
+      "current_limitation": "Manual proof retained, not automated GUI test",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "managed runtime",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s11_runtime_packaging_handoff/report.json",
+      "current_limitation": "Embedded Python still deferred",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "install layout",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s12_install_layout_handoff/report.json",
+      "current_limitation": "Layout is precursor, not signed installer",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "clean-machine proof",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s13_clean_machine_handoff/report.json",
+      "current_limitation": "L1 proof, not installer proof",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "offline wheelhouse proof",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s14_offline_runtime_handoff/report.json",
+      "current_limitation": "Wheel-only readiness still incomplete",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "unsigned portable package",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s15_windows_installer_handoff/report.json",
+      "current_limitation": "signed_installer=false",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "bilingual UX shell",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s16_base_ux_handoff/report.json",
+      "current_limitation": "UX polish does not add capability",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "external package UX proof",
+      "status": "sealed",
+      "evidence_path": "zephyr-dev:.tmp/p6_m3_s17_external_ux_handoff/report.json",
+      "current_limitation": "Preview package proof, not official release",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "external GUI runtime bootstrap",
+      "status": "pass",
+      "evidence_path": ".tmp/external_gui_runtime_bootstrap_check.json",
+      "current_limitation": "Uses packaged wheelhouse, not embedded Python",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    },
+    {
+      "name": "long-file marker proof",
+      "status": "pass",
+      "evidence_path": ".tmp/external_gui_runtime_bootstrap_check.json",
+      "current_limitation": "Preview remains summary-only by design",
+      "runtime_capability_changed": false,
+      "commercial_boundary_preserved": true
+    }
+  ]
+}
